@@ -31,23 +31,38 @@ module.exports = (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        unique: { msg: "This email is already used for another account." },
+        validate: {
+          notNull: { msg: "User must have an email." },
+          notEmpty: { msg: "Email  must not be empty." },
+          isEmail: { msg: "Must be a valid email address." },
+        },
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+        // Validate password
       },
       firstName: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notNull: { msg: "User must have a first name." },
+          notEmpty: { msg: "First name must not be empty." },
+        },
       },
       lastName: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notNull: { msg: "User must have a last name." },
+          notEmpty: { msg: "Last name must not be empty." },
+        },
       },
       bankAccount: {
         type: DataTypes.STRING,
         allowNull: false,
+        // Validate bank account
       },
       createdAt: {
         allowNull: false,

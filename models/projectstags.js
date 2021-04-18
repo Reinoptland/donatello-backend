@@ -1,21 +1,17 @@
 "use strict"
 const { Model } = require("sequelize")
 module.exports = (sequelize, DataTypes) => {
-  class Donations extends Model {
+  class ProjectsTags extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ Projects }) {
+    static associate(models) {
       // define association here
-      this.belongsTo(Projects, { foreignKey: "projectId", as: "projects" })
-    }
-    toJSON() {
-      return { ...this.get(), id: undefined }
     }
   }
-  Donations.init(
+  ProjectsTags.init(
     {
       id: {
         allowNull: false,
@@ -23,21 +19,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      // transactionId: {
-      //   type: DataTypes.UUID,
-      //   allowNull: false,
-      //   defaultValue: DataTypes.UUIDV4,
-      // },
       projectId: {
         type: DataTypes.UUID,
-        allowNull: false,
       },
-      donationAmount: {
+      tagId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      comment: {
-        type: DataTypes.STRING,
       },
       createdAt: {
         allowNull: false,
@@ -50,9 +36,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      tableName: "donations",
-      modelName: "Donations",
+      tableName: "projectstags",
+      modelName: "ProjectsTags",
     }
   )
-  return Donations
+  return ProjectsTags
 }

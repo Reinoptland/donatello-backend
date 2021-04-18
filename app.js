@@ -1,5 +1,5 @@
 const express = require("express")
-const { User, Projects } = require("./models")
+const { User, Projects, Donations, Tags } = require("./models")
 const app = express()
 
 app.use(express.json())
@@ -37,6 +37,24 @@ app.post("/projects", async (req, res) => {
     return res.json(post)
   } catch (err) {
     return res.status(500).json(err)
+  }
+})
+
+app.post("/make-a-donation/", async (req, res) => {
+  const { projectId, donationAmount, comment } = req.body
+  try {
+    const project = await Projects.findOne({
+      where: { id: projectId },
+    })
+    // console.log("found the project???", project)
+    const donation = await Donations.create({
+      projectId: project.id,
+      donationAmount,
+      comment,
+    })
+    return res.json(donation)
+  } catch (error) {
+    return res.status(500).json(error)
   }
 })
 

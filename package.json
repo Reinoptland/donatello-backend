@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest",
-    "test:watch": "npx jest --watch"
+    "test": "npm run setup:db:test && npx jest --runInBand --detectOpenHandles",
+    "test:watch": "npm run setup:db:test && npx jest --watch --runInBand --detectOpenHandles",
+    "setup:db:test": "NODE_ENV=test npm run migrate:undo:all && NODE_ENV=test npm run migrate",
+    "migrate:undo:all": "npx sequelize db:migrate:undo:all",
+    "migrate": "npx sequelize db:migrate"
   },
   "author": "",
   "license": "ISC",

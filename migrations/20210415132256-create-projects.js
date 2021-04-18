@@ -22,8 +22,14 @@ module.exports = {
         allowNull: false,
       },
       userId: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
       },
       createdAt: {
         allowNull: false,

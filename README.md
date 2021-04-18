@@ -1,5 +1,7 @@
 ## User:
 
+Add authentication first
+
 GET:
 
 - Get an overview of all of my projects.
@@ -9,6 +11,7 @@ GET:
 POST:
 
 - Create a new project
+- Add a tag to a project
 
 PATCH/PUT:
 
@@ -22,6 +25,8 @@ DELETE:
 ## Visitor
 
 GET:
+
+Can be combined in one endpoint
 
 - See an overview of most recent projects (x number per page)
 - See top 5 most funded projects based on amount

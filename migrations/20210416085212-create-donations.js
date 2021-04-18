@@ -8,13 +8,18 @@ module.exports = {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      transactionId: {
+      // transactionId: {
+      //   type: DataTypes.UUID,
+      //   allowNull: false,
+      //   defaultValue: DataTypes.UUIDV4,
+      // },
+      projectId: {
         type: DataTypes.UUID,
         allowNull: false,
-      },
-      projectId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+        references: {
+          model: "projects",
+          key: "id",
+        },
       },
       donationAmount: {
         type: DataTypes.INTEGER,
@@ -22,7 +27,6 @@ module.exports = {
       },
       comment: {
         type: DataTypes.STRING,
-        allowNull: true,
       },
       createdAt: {
         allowNull: false,
