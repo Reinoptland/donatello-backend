@@ -14,7 +14,7 @@ module.exports = {
       //   defaultValue: DataTypes.UUIDV4,
       // },
       projectId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "projects",

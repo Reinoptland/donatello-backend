@@ -8,10 +8,9 @@ module.exports = {
       // },
       id: {
         allowNull: false,
-        // autoIncrement: true,
+        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.INTEGER,
       },
       projectName: {
         type: DataTypes.STRING,

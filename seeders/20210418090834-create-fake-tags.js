@@ -1,15 +1,26 @@
-const faker = require("faker")
+tags = [
+  "Art&Music",
+  "Product",
+  "Social",
+  "Technology",
+  "Sports",
+  "Games",
+  "Kids",
+  "Fashion",
+  "Health",
+  "Community",
+]
 
-const tags = [...Array(20)].map((tag) => ({
-  tag: faker.name.jobArea(),
+const tagsSeed = tags.map((tag) => ({
+  tag,
   createdAt: new Date(),
   updatedAt: new Date(),
 }))
 
-console.log("tags:", tags)
+// console.log("tags:", tagsSeed)
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.bulkInsert("tags", tags, {})
+    return queryInterface.bulkInsert("tags", tagsSeed, {})
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.bulkDelete("tags", null, {})

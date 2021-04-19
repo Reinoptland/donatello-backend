@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
       },
       projectId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
       },
       tagId: {
         type: DataTypes.INTEGER,

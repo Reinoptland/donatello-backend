@@ -9,10 +9,20 @@ module.exports = {
         type: DataTypes.INTEGER,
       },
       projectId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
+        references: {
+          model: "projects",
+          key: "id",
+        },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
       },
       tagId: {
         type: DataTypes.INTEGER,
+        references: {
+          model: "tags",
+          key: "id",
+        },
       },
       createdAt: {
         allowNull: false,

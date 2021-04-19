@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       //   defaultValue: DataTypes.UUIDV4,
       // },
       projectId: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
       donationAmount: {
