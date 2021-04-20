@@ -4,9 +4,9 @@ module.exports = {
     await queryInterface.createTable("donations", {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
       },
       // transactionId: {
       //   type: DataTypes.UUID,
@@ -14,7 +14,7 @@ module.exports = {
       //   defaultValue: DataTypes.UUIDV4,
       // },
       projectId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         references: {
           model: "projects",

@@ -20,10 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
       },
       projectId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
       },
       tagId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
       },
       createdAt: {
         allowNull: false,

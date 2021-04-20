@@ -9,7 +9,7 @@ module.exports = {
         type: DataTypes.INTEGER,
       },
       projectId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         references: {
           model: "projects",
           key: "id",
@@ -18,7 +18,7 @@ module.exports = {
         onUpdate: "CASCADE",
       },
       tagId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         references: {
           model: "tags",
           key: "id",
