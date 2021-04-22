@@ -1,4 +1,5 @@
 const faker = require("faker")
+const { QueryInterface } = require("sequelize/types")
 const { User, Projects } = require("../models")
 
 // ;("use strict")
