@@ -1,5 +1,4 @@
 const faker = require("faker")
-const { QueryInterface } = require("sequelize/types")
 const { User, Projects } = require("../models")
 
 // ;("use strict")
@@ -44,44 +43,44 @@ module.exports = {
 
     const usersArray = await User.findAll()
     const randomIndex = (max) => Math.floor(Math.random() * max)
-    console.log("users updated?", usersArray[randomIndex(2)])
-    const projects = [...Array(100)].map((project) => ({
-      id: faker.datatype.uuid(),
-      projectName: faker.company.bsBuzz(),
-      projectDescription: faker.company.catchPhrase(),
-      userId: usersArray[randomIndex(101)].id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }))
+    const projects = [...Array(100)].map((project) => {
+      const randomId = randomIndex(99)
+
+      return {
+        id: faker.datatype.uuid(),
+        projectName: faker.company.bsBuzz(),
+        projectDescription: faker.company.catchPhrase(),
+        userId: usersArray[randomId].id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
     await queryInterface.bulkInsert("projects", projects, {})
 
     const projectsArray = await Projects.findAll()
-    console.log("projects updated?", projectsArray[randomIndex(2)])
 
     const donations = [...Array(100)].map((donation) => ({
       id: faker.datatype.uuid(),
       donationAmount: faker.datatype.number(1000),
-      projectId: projectsArray[randomIndex(101)].id,
+      projectId: projectsArray[randomIndex(99)].id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }))
-    console.log("donations updated?", donations[randomIndex(2)])
-    return await queryInterface.bulkInsert("donations", donations, {})
+    await queryInterface.bulkInsert("donations", donations, {})
 
-    // const projectstags = [...Array(100)].map((projecttag) => ({
-    //   projectId: projectsArray[randomIndex(101)].id,
-    //   tagId: tags[randomIndex(11)].id,
-    //   createdAt: new Date(),
-    //   updatedAt: new Date(),
-    // }))
-    // console.log("projectstags updated?", projectstags[randomIndex(2)])
-    // return await queryInterface.bulkInsert("projectstags", projectstags, {})
+    const projectstags = [...Array(100)].map((projecttag) => ({
+      projectId: projectsArray[randomIndex(99)].id,
+      tagId: tags[randomIndex(9)].id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }))
+    return await queryInterface.bulkInsert("projectstags", projectstags, {})
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete("users", null, {})
     await queryInterface.bulkDelete("projects", null, {})
     await queryInterface.bulkDelete("tags", null, {})
     await queryInterface.bulkDelete("donations", null, {})
-    // await queryInterface.bulkDelete("projectstags", null, {})
+    await queryInterface.bulkDelete("projectstags", null, {})
   },
 }

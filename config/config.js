@@ -7,7 +7,7 @@ module.exports = {
     pool: {
       max: 4,
     },
-    logging: true,
+    logging: false,
   },
   test: {
     use_env_variable: "TEST_DATABASE_URL",

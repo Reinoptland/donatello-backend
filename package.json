@@ -8,7 +8,8 @@
     "test:watch": "npm run setup:db:test && npx jest --watch --runInBand --detectOpenHandles",
     "setup:db:test": "NODE_ENV=test npm run migrate:undo:all && NODE_ENV=test npm run migrate",
     "migrate:undo:all": "npx sequelize db:migrate:undo:all",
-    "migrate": "npx sequelize db:migrate"
+    "migrate": "npx sequelize db:migrate",
+    "db:reset": "npm run migrate:undo:all && npm run migrate && npx sequelize db:seed:all"
   },
   "author": "",
   "license": "ISC",

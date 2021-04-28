@@ -1,16 +1,11 @@
 const express = require("express")
 const { User, Projects, Donations, Tags } = require("./models")
 const app = express()
-const jwt = require("jsonwebtoken")
+const { generateToken, authenticateToken } = require("./middlewares/auth")
 
 app.use(express.json())
 
 // app.get("/posts", (req, res) => {})
-
-const generateToken = (userId) => {
-  // Serialize the user data(name), access token & when the token expires
-  return jwt.sign(userId, process.env.TOKEN_SECRET, { expiresIn: "90m" })
-}
 
 app.post("/signup", async (req, res) => {
   const { email, password, firstName, lastName, bankAccount } = req.body
@@ -29,35 +24,36 @@ app.post("/signup", async (req, res) => {
   }
 })
 
-const authenticateToken = (req, res, next) => {
-  // Returns the Bearer token. The format is "Bearer token", that's why we split in the token variable.
-  const authHeader = req.headers["authorization"]
-  // returns either an undefined or the actual token.
-  const token = authHeader && authHeader.split(" ")[1]
-  if (token == null) return res.sendStatus(401)
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body
+  if (!email || !password) return res.sendStatus(401)
 
-  // until now we've checked if we have a valid token. Below, we verify the token.
-  jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
-    // The error is that the token is no longer valid.
-    if (err) return res.sendStatus(403)
-    req.user = user
-    next()
-  })
-}
+  try {
+    const user = await User.findOne({
+      where: { email, password },
+    })
+    if (user === null) return res.sendStatus(404)
+    const userUuid = { userId: user.id }
+    const token = generateToken(userUuid)
+    return res.json({ token })
+  } catch (err) {
+    return res.status(500).json(err)
+  }
+})
 
-app.post("/new-project", authenticateToken, async (req, res) => {
+app.post("/project", authenticateToken, async (req, res) => {
   const { userId, projectName, projectDescription } = req.body
   // returns either an undefined or the actual token.
   try {
     const user = await User.findOne({
       where: { id: userId },
     })
-    const post = await Projects.create({
+    const project = await Projects.create({
       projectName,
       projectDescription,
       userId: user.id,
     })
-    return res.json(post)
+    return res.json(project)
   } catch (err) {
     return res.status(500).json(err)
   }
@@ -81,20 +77,69 @@ app.post("/make-a-donation/", async (req, res) => {
   }
 })
 
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body
-  if (!email || !password) return res.sendStatus(401)
-
+app.get("/my-account/:userId", authenticateToken, async (req, res) => {
+  // req.body includes user id + any data that needs to be updated
+  const { userId } = req.params
   try {
-    const user = await User.findOne({
-      where: { email, password },
+    let user = await User.findOne({
+      where: { id: userId },
     })
-    if (user === null) return res.sendStatus(404)
-    const userUuid = { userId: user.id }
-    const token = generateToken(userUuid)
-    return res.json({ token })
+    return res.json(user)
   } catch (err) {
     return res.status(500).json(err)
+  }
+})
+
+app.patch("/my-account/:userId", authenticateToken, async (req, res) => {
+  // req.body includes user id + any data that needs to be updated
+  const { userId } = req.params
+  const reqUser = req.body
+  try {
+    let user = await User.findOne({
+      where: { id: userId },
+    })
+    const updatedUser = await user.update({ ...reqUser })
+    return res.json(updatedUser)
+  } catch (err) {
+    return res.status(500).json(err)
+  }
+})
+
+app.patch("/project/:projectId", authenticateToken, async (req, res) => {
+  const { projectId } = req.params
+  const reqProject = req.body
+  try {
+    let project = await Projects.findOne({
+      where: { id: projectId },
+    })
+
+    const updatedProject = await project.update({ ...reqProject })
+    return res.json(updatedProject)
+  } catch (err) {
+    return res.status(500).json(err)
+  }
+})
+
+app.delete("/delete-user/:id", async (req, res) => {
+  const id = req.params.id
+  try {
+    await Projects.destroy({ where: { userId: id } })
+    await User.destroy({ where: { id } })
+    return res.status(204).json({ message: "User & projects deleted" })
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ error: "Something went wrong" })
+  }
+})
+
+app.delete("/delete-project/:id", async (req, res) => {
+  const projectId = req.params.id
+  try {
+    await Projects.destroy({ where: { id: projectId } })
+    return res.status(204).json({ message: "Project deleted." })
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ error: "Something went wrong" })
   }
 })
 
