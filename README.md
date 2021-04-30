@@ -36,8 +36,8 @@ Can be combined in one endpoint
 
 - Search projects by tags
 
-- Get a list of all of projects for a specific user.
-- Get an overview of one specific project.
+- ~~Get a list of all of projects for a specific user.~~
+- ~~Get an overview of one specific project.~~
 
 - Get an overview of all donations made for a specific project.
 

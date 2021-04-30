@@ -1,4 +1,5 @@
-const { generateToken, authenticateToken } = require("../middlewares/auth")
+const { authenticateToken } = require("../middlewares/auth")
+const { generateToken } = require("../utils/generateToken")
 
 describe("auth middleware", () => {
   test.only("should ", async () => {

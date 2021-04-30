@@ -25,6 +25,9 @@ const tags = [
   "Fashion",
   "Health",
   "Community",
+  "Sustainability",
+  "Education",
+  "Startup",
 ]
 
 // console.log("users:", users)

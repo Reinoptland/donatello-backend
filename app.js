@@ -1,30 +1,21 @@
 const express = require("express")
-const { User, Projects, Donations, Tags } = require("./models")
 const app = express()
-const { generateToken, authenticateToken } = require("./middlewares/auth")
 const projectRouter = require("./routers/projects")
+const userRouter = require("./routers/users")
+const { generateToken } = require("./utils/generateToken")
+const { User } = require("./models")
+
+// const users = require("./controllers/users")
 
 app.use(express.json())
-app.use(projectRouter)
 
-// app.get("/posts", (req, res) => {})
-
-app.post("/users", async (req, res) => {
-  const { email, password, firstName, lastName, bankAccount } = req.body
-  try {
-    const user = await User.create({
-      email,
-      password,
-      firstName,
-      lastName,
-      bankAccount,
-    })
-    return res.json(user)
-  } catch (err) {
-    console.log(err)
-    return res.status(400).json(err.message)
-  }
-})
+app.use("/projects/", projectRouter)
+app.use("/projects/:userId", projectRouter)
+app.use("/projects/:projectId/donations/", projectRouter)
+app.use("/projects/:projectId", projectRouter)
+app.use("/users", userRouter)
+// app.use("/login", userRouter)
+app.use("/users/:userId", userRouter)
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body
@@ -34,7 +25,7 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({
       where: { email, password },
     })
-    if (user === null) return res.sendStatus(404)
+    if (!user) return res.sendStatus(404)
     const userUuid = { userId: user.id }
     const token = generateToken(userUuid)
     return res.json({ token })
@@ -43,44 +34,6 @@ app.post("/login", async (req, res) => {
   }
 })
 
-app.get("/users/:userId", authenticateToken, async (req, res) => {
-  // make sure the user id from the token is the same as the userId from the route
-  const { userId } = req.params
-  try {
-    let user = await User.findOne({
-      where: { id: userId },
-    })
-    return res.json(user)
-  } catch (err) {
-    return res.status(500).json(err)
-  }
-})
-
-app.patch("/users/:userId", authenticateToken, async (req, res) => {
-  // req.body includes user id + any data that needs to be updated
-  const { userId } = req.params
-  const reqUser = req.body
-  try {
-    let user = await User.findOne({
-      where: { id: userId },
-    })
-    const updatedUser = await user.update({ ...reqUser })
-    return res.json(updatedUser)
-  } catch (err) {
-    return res.status(500).json(err)
-  }
-})
-
-app.delete("/users/:id", async (req, res) => {
-  const id = req.params.id
-  try {
-    await Projects.destroy({ where: { userId: id } })
-    await User.destroy({ where: { id } })
-    return res.status(204).json({ message: "User & projects deleted" })
-  } catch (err) {
-    console.log(err)
-    return res.status(500).json({ error: "Something went wrong" })
-  }
-})
+// app.get("/posts", (req, res) => {})
 
 module.exports = app
