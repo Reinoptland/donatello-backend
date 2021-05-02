@@ -42,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         // Validate password
+        validate: {
+          len: [6, 25],
+          notNull: { msg: "User must have a password." },
+          notEmpty: { msg: "Password must not be empty." },
+        },
       },
       firstName: {
         type: DataTypes.STRING,
@@ -63,6 +68,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         // Validate bank account
+        validate: {
+          notNull: { msg: "User must have a bank account." },
+          notEmpty: { msg: "Bank account must not be empty." },
+        },
       },
       createdAt: {
         allowNull: false,

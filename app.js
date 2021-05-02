@@ -9,23 +9,19 @@ const { User } = require("./models")
 
 app.use(express.json())
 
-app.use("/projects/", projectRouter)
-app.use("/projects/:userId", projectRouter)
-app.use("/projects/:projectId/donations/", projectRouter)
-app.use("/projects/:projectId", projectRouter)
+app.use("/projects", projectRouter)
 app.use("/users", userRouter)
-// app.use("/login", userRouter)
-app.use("/users/:userId", userRouter)
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body
-  if (!email || !password) return res.sendStatus(401)
+  // if (!email || !password) return res.sendStatus(401)
 
   try {
     const user = await User.findOne({
       where: { email, password },
     })
-    if (!user) return res.sendStatus(404)
+    if (!user)
+      return res.status(404).json("An account with this email cannot be found")
     const userUuid = { userId: user.id }
     const token = generateToken(userUuid)
     return res.json({ token })

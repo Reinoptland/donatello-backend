@@ -14,7 +14,6 @@ module.exports = (sequelize, DataTypes) => {
     }
     static associate({ Tags }) {
       // define association here
-      // ProjectsTags is the name of the join table, need to create it!
       this.belongsToMany(Tags, { through: "ProjectsTags" })
     }
     static associate({ Donations }) {

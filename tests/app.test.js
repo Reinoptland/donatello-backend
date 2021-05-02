@@ -4,33 +4,25 @@ const request = supertest(app)
 const db = require("../models")
 const jwt = require("jsonwebtoken")
 const { generateToken } = require("../utils/generateToken")
-const { fakeUser, fakeProject } = require("../utils/generateFakeData")
+const {
+  fakeUser,
+  fakeProject,
+  fakeDonation,
+  fakeTags,
+} = require("../utils/generateFakeData")
 
 // setup
 beforeEach(async () => {
+  await db.Donations.destroy({ where: {} })
   await db.Projects.destroy({ where: {} })
   await db.User.destroy({ where: {} })
 })
 // tear down
 afterAll(async () => {
+  await db.Donations.destroy({ where: {} })
   await db.Projects.destroy({ where: {} })
   await db.User.destroy({ where: {} })
   await db.sequelize.close()
-})
-
-describe("/users", () => {
-  test("should create a new user", async (done) => {
-    // arrange
-    const body = fakeUser()
-    // act
-    const response = await request.post("/users").send(body)
-    // assert
-    expect(response.body).toBeDefined()
-    expect(response.status).toBe(200)
-    const createdUser = await db.User.findOne({ where: { email: body.email } })
-    expect(createdUser).not.toBe(null)
-    done()
-  })
 })
 
 describe("/login", () => {
@@ -82,74 +74,44 @@ describe("/login", () => {
   })
 })
 
-describe("/projects/:userId", () => {
-  test("should create a new project when sent the valid access token", async (done) => {
+describe("/users", () => {
+  test("should create a new user", async (done) => {
     // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const body = fakeProject(userId)
-    const token = generateToken({ userId })
-
+    const body = fakeUser()
     // act
-    const responseProject = await request
-      .post("/projects/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send(body)
-
+    const response = await request.post("/users").send(body)
     // assert
-    expect(responseProject.body).toBeDefined()
-    expect(responseProject.status).toBe(200)
+    expect(response.body).toBeDefined()
+    expect(response.status).toBe(200)
+    const createdUser = await db.User.findOne({ where: { email: body.email } })
+    expect(createdUser).not.toBe(null)
     done()
   })
 
-  test.todo(
-    "should NOT create a new project when sent a malformed access token"
-    // async (done) => {
-    //   const user = await fakeUser()
-    //   const newUser = await db.User.create(user)
-    //   const userId = newUser.id
-    //   // create a body with all the mandatory project data
-    //   const body = fakeProject(userId)
+  test("should return an error if password is shorter than 6 characters", async (done) => {
+    // arrange
+    const body = fakeUser()
+    body.password = "pass"
 
-    //   // act
-    //   // send "bla" in the authorization header
-    //   const responseProject = await request
-    //     .post("/projects")
-    //     .set("Authorization", `Bearer "bla"`)
-    //     .send(body)
+    // act
+    const response = await request.post("/users").send(body)
+    // assert
+    expect(response.body).toBeDefined()
+    expect(response.status).toBe(400)
+    done()
+  })
+  test("should return an error if an account with the email already exists", async (done) => {
+    // arrange
+    const body = fakeUser()
+    await db.User.create(body)
 
-    //   // assert
-    //   expect(responseProject.status).toBe(401)
-
-    //   done()
-    // })
-
-    // test("should NOT create a new project when sent an expired access token", async (done) => {
-    //   // arrange
-    //   // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
-    //   const user = await fakeUser()
-    //   const newUser = await db.User.create(user)
-    //   const userId = newUser.id
-    //   const body = fakeProject(userId)
-
-    //   const userIdObj = { userId }
-    //   const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
-    //     expiresIn: "-10s",
-    //   })
-
-    //   // act
-    //   // send the expired token in the authorization header
-    //   const responseProject = await request
-    //     .post("/projects")
-    //     .set("Authorization", `Bearer ${token}`)
-    //     .send(body)
-
-    //   // assert
-    //   // status 401
-    //   expect(responseProject.status).toBe(401)
-
-    //   done()
-    // })
-  )
+    // act
+    const response = await request.post("/users").send(body)
+    // assert
+    expect(response.body).toBeDefined()
+    expect(response.status).toBe(400)
+    done()
+  })
 })
 
 describe("/users/:userId (get)", () => {
@@ -171,9 +133,22 @@ describe("/users/:userId (get)", () => {
     expect(responseFirstName).toBe(firstName)
     done()
   })
-  test.todo(
-    "/my-account/edit-details should NOT return an updated user if passed a wrong userId"
-  )
+  test("should NOT return user data if token userId is different from param userId", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const token = generateToken({ userId })
+
+    // act
+    const responseUpdatedUser = await request
+      .get("/users/" + "bla")
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseUpdatedUser.body).toBeDefined()
+    expect(responseUpdatedUser.status).toBe(401)
+    done()
+  })
 })
 
 describe("/users/:userId (patch)", () => {
@@ -199,12 +174,99 @@ describe("/users/:userId (patch)", () => {
     expect(responseFirstName).toBe(body.firstName)
     done()
   })
-  test.todo(
-    "/my-account/edit-details should NOT return an updated user if passed a wrong userId"
-  )
 })
 
-describe("projects/:projectId (patch)", () => {
+describe("/users/:userId (delete)", () => {
+  test(" should return 204 if successful", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const token = generateToken({ userId })
+    const createProject = await db.Projects.create(fakeProject(userId))
+
+    //act
+    const responseDeletedUser = await request
+      .delete("/users/" + userId)
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseDeletedUser.status).toBe(204)
+    done()
+  })
+})
+
+describe("/projects/:userId (post)", () => {
+  test("should create a new project when sent the valid access token", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const token = generateToken({ userId })
+    const tagIds = fakeTags()
+    const project = fakeProject(userId)
+    const body = {
+      project,
+      tagIds,
+    }
+    // act
+    const responseProject = await request
+      .post("/projects/" + userId)
+      .set("Authorization", `Bearer ${token}`)
+      .send(body)
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
+    done()
+  })
+
+  // test("should NOT create a new project when sent a malformed access token", async (done) => {
+  //   const user = await fakeUser()
+  //   const newUser = await db.User.create(user)
+  //   const userId = newUser.id
+  //   // create a body with all the mandatory project data
+  //   const body = fakeProject(userId)
+
+  //   // act
+  //   // send "bla" in the authorization header
+  //   const responseProject = await request
+  //     .post("/projects")
+  //     .set("Authorization", `Bearer "bla"`)
+  //     .send(body)
+
+  //   // assert
+  //   expect(responseProject.status).toBe(401)
+
+  //   done()
+  // })
+
+  // test("should NOT create a new project when sent an expired access token", async (done) => {
+  //   // arrange
+  //   // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
+  //   const user = await fakeUser()
+  //   const newUser = await db.User.create(user)
+  //   const userId = newUser.id
+  //   const body = fakeProject(userId)
+
+  //   const userIdObj = { userId }
+  //   const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
+  //     expiresIn: "-10s",
+  //   })
+
+  //   // act
+  //   // send the expired token in the authorization header
+  //   const responseProject = await request
+  //     .post("/projects")
+  //     .set("Authorization", `Bearer ${token}`)
+  //     .send(body)
+
+  //   // assert
+  //   // status 401
+  //   expect(responseProject.status).toBe(401)
+
+  //   done()
+  // })
+})
+
+describe("/projects/:projectId (patch)", () => {
   test("should return an updated project", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
@@ -230,25 +292,6 @@ describe("projects/:projectId (patch)", () => {
   })
 })
 
-describe("/users/:userId (delete)", () => {
-  test(" should return 204 if successful", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const token = generateToken({ userId })
-    const createProject = await db.Projects.create(fakeProject(userId))
-
-    //act
-    const responseDeletedUser = await request
-      .delete("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send()
-
-    // assert
-    expect(responseDeletedUser.status).toBe(204)
-    done()
-  })
-})
-
 describe("/projects/:projectId (delete)", () => {
   test("should return 204 if successful", async (done) => {
     // arrange
@@ -268,8 +311,8 @@ describe("/projects/:projectId (delete)", () => {
   })
 })
 
-describe("overview of all projects by user", () => {
-  test("/projects/:userId should return all projects for a specific user", async (done) => {
+describe("/projects/:userId (get)", () => {
+  test("should return all projects for a specific user", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const createProject = await db.Projects.create(fakeProject(userId))
@@ -286,16 +329,21 @@ describe("overview of all projects by user", () => {
     "/projects/:userId should return an error if the user doesn't have any projects"
   )
 })
-describe("overview of a specific project", () => {
-  test("/projects/:projectId should return the project with the associated id", async (done) => {
+
+describe("/projects/:projectId (get)", () => {
+  test("should return the project with the associated id", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const { id: projectId } = await db.Projects.create(fakeProject(userId))
-
+    const donation = await db.Donations.create(fakeDonation(projectId))
     // act
-    const responseProject = await request.get("/projects/" + projectId).send()
 
+    // const responseProject = await request.get("/projects/" + projectId + "/donations").send()
+    const responseProject = await request
+      .get(`/projects/${projectId}/donations`)
+      .send()
     // assert
+    console.log("what is responseProject.body?", responseProject.body)
     expect(responseProject.body).toBeDefined()
     expect(responseProject.status).toBe(200)
     done()

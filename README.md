@@ -31,15 +31,13 @@ GET:
 Can be combined in one endpoint
 
 - Get the 10 most recent projects (x number per page)
-- See the 10 most funded projects based on amount
-- See the 10 most popular projects based on number of transactions
+- Get the 10 most funded projects based on amount
+- Get the 10 most popular projects based on number of transactions
 
 - Search projects by tags
 
 - ~~Get a list of all of projects for a specific user.~~
-- ~~Get an overview of one specific project.~~
-
-- Get an overview of all donations made for a specific project.
+- ~~Get an overview of one specific project & all donations made for it.~~
 
 ## Donation maker:
 

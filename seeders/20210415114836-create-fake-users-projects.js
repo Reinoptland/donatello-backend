@@ -1,5 +1,5 @@
 const faker = require("faker")
-const { User, Projects } = require("../models")
+const { User, Projects, Donations, Tags } = require("../models")
 
 // ;("use strict")
 
@@ -71,9 +71,11 @@ module.exports = {
     }))
     await queryInterface.bulkInsert("donations", donations, {})
 
+    const tagsFromDB = await Tags.findAll()
+
     const projectstags = [...Array(100)].map((projecttag) => ({
       projectId: projectsArray[randomIndex(99)].id,
-      tagId: tags[randomIndex(9)].id,
+      tagId: tagsFromDB[randomIndex(9)].id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }))

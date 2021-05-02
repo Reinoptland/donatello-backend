@@ -23,11 +23,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
       },
-      // transactionId: {
-      //   type: DataTypes.UUID,
-      //   allowNull: false,
-      //   defaultValue: DataTypes.UUIDV4,
-      // },
       projectId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -35,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       donationAmount: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        validate: {
+          notNull: { msg: "Donation amount cannot be null." },
+          notEmpty: { msg: "Password must not be empty." },
+        },
       },
       comment: {
         type: DataTypes.STRING,

@@ -13,6 +13,7 @@ module.exports = {
         references: {
           model: "projects",
           key: "id",
+          as: "projectId",
         },
         onDelete: "SET NULL",
         onUpdate: "CASCADE",
@@ -22,6 +23,7 @@ module.exports = {
         references: {
           model: "tags",
           key: "id",
+          as: "tagId",
         },
       },
       createdAt: {

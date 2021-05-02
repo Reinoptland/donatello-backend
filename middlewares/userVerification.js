@@ -8,11 +8,12 @@ const userIdFromToken = (headers) => {
   return decoded.userId
 }
 
-const getVerifiedUserId = async (req) => {
+const userIdVerification = async (req, res, next) => {
   const userIdFromReq = req.params.userId
   const userId = await userIdFromToken(req.headers)
-  if (userIdFromReq !== userId) return res.sendStatus(401)
-  return userId
+  if (userIdFromReq !== userId)
+    return res.status(401).json("user Id is different")
+  next()
 }
 
-module.exports = { userIdFromToken, getVerifiedUserId }
+module.exports = { userIdVerification }
