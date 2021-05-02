@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     }
     static associate({ Donations }) {
       // define association here
-      this.hasMany(Donations, { foreignKey: "projectId", as: "projects" })
+      this.hasMany(Donations, { foreignKey: "projectId", as: "donations" })
     }
 
     toJSON() {
