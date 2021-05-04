@@ -42,13 +42,17 @@ router.patch(
     // const userId = await getVerifiedUserId(req, res)
     const { userId } = req.params
 
+    // console.log("reqUser:", reqUser)
     const reqUser = req.body
     try {
+      if (Object.keys(reqUser).length === 0) {
+        return res.status(400).json("Nothing to update.")
+      }
       const user = await findUserById(userId)
       const updatedUser = await user.update({ ...reqUser })
       return res.json(updatedUser)
     } catch (err) {
-      return res.status(500).json(err.message)
+      return res.status(400).json(err.message)
     }
   }
 )

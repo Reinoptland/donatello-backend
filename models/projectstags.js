@@ -19,12 +19,12 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      // projectId: {
-      //   type: DataTypes.UUID,
-      // },
-      // tagId: {
-      //   type: DataTypes.UUID,
-      // },
+      projectId: {
+        type: DataTypes.UUID,
+      },
+      tagId: {
+        type: DataTypes.UUID,
+      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,

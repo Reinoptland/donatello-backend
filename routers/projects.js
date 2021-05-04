@@ -1,5 +1,4 @@
 const { Router } = require("express")
-const { Op } = require("sequelize")
 
 const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
@@ -14,35 +13,40 @@ const { findDonationById } = require("../services/donationService")
 // - Get the 10 most popular projects based on number of transactions
 
 router.get("/", async (req, res) => {
+  const reqLimit = req.query.limit
+  const offset = req.query.offset || 0
+
+  // const sortOptions = {
+  //   date: sortedByDate,
+  //   donationAmount: sortedByDonationAmount
+  // }
+
   try {
-    // extract all queries from req
-    // fetch all projects
-    // if req.query has byDate -> sort by most recent projects
-    // const sortedByDate = await Projects.findAll({
-    //   limit: 10,
-    //   order: [["updatedAt", "DESC"]],
-    // })
-
-    // console.log(sortedByDate)
-    // if req.query has byFunding -> sort by projects with highest total amount of funding
-    const groupedDonations = await Projects.findAll({
-      include: { model: Donations, as: "donations" },
-      // where: { donationAmount: { [Op.gt]: 300 } },
-      // group: [["projects.id", "projectId"]], // note for Rein - why "id" is required? is that an SQL-native thing?
-      // order: [["donationAmount", "DESC"]],
-      // order: [["projectId", "DESC"]],
+    const sortedByDate = await Projects.findAll({
+      limit: reqLimit || 10,
+      offset: offset || 0,
+      order: [["updatedAt", "DESC"]],
     })
+    const sortedByDonationAmount = await Projects.findAll({
+      include: {
+        model: Donations,
+        as: "donations",
+        // where: fn("sum", col("donationAmount")),
+        // where: Donations.sum("donationAmount"),
+      },
+    })
+    if (req.query.sortBy) {
+      // const sortingFunc = sortOptions[date] || sortOptions[donationAmount]
+      res.json({ sortedByDate })
+    }
 
-    console.log("groupedDonations:", groupedDonations.length)
-    const whatSum = await Donations.sum("donationAmount")
-    console.log("SUM:", whatSum)
+    // const whatSum = await Projects.sum("donationAmount")
+    // console.log("SUM:", whatSum)
     // const sortedByDonation = await Projects.findAll({
     //   limit: 10,
     //   order: [[Projects.associations.Donations, "donationAmount", "DESC"]],
     // })
-    // console.log("sortedByDonation:", sortedByDonation)
-    return res.json({ groupedDonations })
-    // if req.query has byPopularity -> sort by highest number of transactions
+    // return res.json({ groupedDonations })
   } catch (error) {
     console.log("ERROR:", error)
     return res.status(500).json(error)
@@ -92,59 +96,38 @@ router.post(
         userId: user.id,
       })
 
-      // const projectId = project.id
-      // console.log("projectId:", projectId)
-      // console.log("tagIds:", tagIds)
+      const projectTagData = tagIds.map((tagId) => {
+        return { projectId: project.id, tagId }
+      })
+
+      const projectTags = await ProjectsTags.bulkCreate(projectTagData)
+
+      console.log(projectTagData)
+      // project.addTags(tagIds[0])
+
       // const promisedTags = []
       // for (const tagId of tagIds) {
       //   promisedTags.push(Tags.findOne({ where: { id: tagId } }))
       // }
       // const resolvedTags = await Promise.all(promisedTags)
+      // console.log("resolvedTags:", resolvedTags[0])
 
-      // await project.addRepository(resolvedTags[0])
+      // await project.addTags(resolvedTags[0])
+      // const fetchedProject = await Projects.findOne({ include: Tags })
+      // console.log("fetchedProject:", fetchedProject)
 
       // const projectWithAssociation = await Projects.findOne({
-      //   where: { id: project.id },
-      //   include: [Tags],
+      //   // where: { id: project.id },
+      //   include: {model: Tags},
       // })
 
-      // console.log("projectWithAssociation?", projectWithAssociation)
-      // console.log("tagsProjectsAdded?", tagsProjectsAdded)
-      // const tagIdFromDb = resolvedTags[0].id
-      // const createProjectTags = await ProjectsTags.create({
-      //   tagId: tagIdFromDb,
-      //   projectId,
-      // })
-
-      // console.log("createProjectTags", createProjectTags)
-      // const projectsTagsArray = []
-      // for (const tagId of tagIds) {
-      //   projectsTagsArray.push(ProjectsTags.create({ tagId, projectId }))
-      // }
-      // const projectsTags = await Promise.all(projectsTagsArray)
-      // const createProjectTags = async (tagId) => {
-      //   console.log("{ tagId, projectId }", { tagId, projectId })
-      //   return await ProjectsTags.create({ tagId, projectId })
-      // }
-
-      // const projectTags = async () => {
-      //   return Promise.all(
-      //     tagIds.map((tagId) => {
-      //       console.log("tagID:", tagId)
-      //       createProjectTags(tagId)
-      //     })
-      //   )
-      // }
-      // console.log("what is promise.all:", projectsTags)
       // const projectsTags = tagIds.map(async (tagId) => {
       //   await ProjectsTags.create({ tagId, projectId })
       // })
-      // console.log("projectTags:", projectTags)
-      // projectTags()
 
-      return res.json(project)
+      return res.json({ ...project.dataValues, projectTags })
     } catch (err) {
-      return res.status(500).json(err)
+      return res.status(500).json(err.message)
     }
   }
 )

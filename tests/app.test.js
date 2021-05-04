@@ -156,6 +156,7 @@ describe("/users/:userId (patch)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const body = {
+      id: userId,
       firstName: "Natalia",
       email: "natalia@email.com",
     }
@@ -172,6 +173,32 @@ describe("/users/:userId (patch)", () => {
     expect(responseUpdatedUser.status).toBe(200)
     const responseFirstName = responseUpdatedUser.body.firstName
     expect(responseFirstName).toBe(body.firstName)
+    done()
+  })
+  test("should return an error if send wrong data", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const token = generateToken({ userId })
+    const body = {
+      // name: "bla",
+      // email: "email",
+      // id: userId,
+      // firstName: "Natalia",
+      // email: "natalia@email.com",
+    }
+
+    // act
+    const responseUpdatedUser = await request
+      .patch("/users/" + userId)
+      .set("Authorization", `Bearer ${token}`)
+      .send(body)
+
+    // assert
+
+    console.log("updated user:", responseUpdatedUser.body)
+
+    expect(responseUpdatedUser.body).toBeDefined()
+    expect(responseUpdatedUser.status).toBe(400)
     done()
   })
 })
@@ -193,10 +220,54 @@ describe("/users/:userId (delete)", () => {
     expect(responseDeletedUser.status).toBe(204)
     done()
   })
+  test(" should return 401 if passed wrong userId", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const token = generateToken({ userId: 5 })
+    const createProject = await db.Projects.create(fakeProject(userId))
+
+    //act
+    const responseDeletedUser = await request
+      .delete("/users/" + userId)
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseDeletedUser.status).toBe(401)
+
+    done()
+  })
+})
+
+describe("/projects (get)", () => {
+  test("should return 8 projects sorted by date", async (done) => {
+    // arrange
+    const limit = 8
+    const offset = 0
+    const sortBy = "date"
+    const { id: userId } = await db.User.create(fakeUser())
+
+    for (i = 0; i < 10; i++) {
+      await db.Projects.create(fakeProject(userId))
+    }
+
+    // act
+    const responseProject = await request
+      .get("/projects")
+      .query({ limit, offset, sortBy })
+      .send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
+    const responseLength = responseProject.body.sortedByDate.length
+    expect(responseLength).toBe(8)
+    done()
+  })
 })
 
 describe("/projects/:userId (post)", () => {
-  test("should create a new project when sent the valid access token", async (done) => {
+  test("should create a new project when sent valid access token, project name & desc, & tagIds", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const token = generateToken({ userId })
