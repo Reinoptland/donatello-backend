@@ -13,14 +13,18 @@ const {
 
 // setup
 beforeEach(async () => {
-  await db.Donations.destroy({ where: {} })
-  await db.Projects.destroy({ where: {} })
+  await db.ProjectTag.destroy({ where: {} })
+  await db.Tag.destroy({ where: {} })
+  await db.Donation.destroy({ where: {} })
+  await db.Project.destroy({ where: {} })
   await db.User.destroy({ where: {} })
 })
 // tear down
 afterAll(async () => {
-  await db.Donations.destroy({ where: {} })
-  await db.Projects.destroy({ where: {} })
+  await db.ProjectTag.destroy({ where: {} })
+  await db.Tag.destroy({ where: {} })
+  await db.Donation.destroy({ where: {} })
+  await db.Project.destroy({ where: {} })
   await db.User.destroy({ where: {} })
   await db.sequelize.close()
 })
@@ -208,7 +212,7 @@ describe("/users/:userId (delete)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const token = generateToken({ userId })
-    const createProject = await db.Projects.create(fakeProject(userId))
+    const createProject = await db.Project.create(fakeProject(userId))
 
     //act
     const responseDeletedUser = await request
@@ -224,7 +228,7 @@ describe("/users/:userId (delete)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const token = generateToken({ userId: 5 })
-    const createProject = await db.Projects.create(fakeProject(userId))
+    const createProject = await db.Project.create(fakeProject(userId))
 
     //act
     const responseDeletedUser = await request
@@ -248,7 +252,7 @@ describe("/projects (get)", () => {
     const { id: userId } = await db.User.create(fakeUser())
 
     for (i = 0; i < 10; i++) {
-      await db.Projects.create(fakeProject(userId))
+      await db.Project.create(fakeProject(userId))
     }
 
     // act
@@ -271,12 +275,20 @@ describe("/projects/:userId (post)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const token = generateToken({ userId })
-    const tagIds = fakeTags()
+    const tagNames = fakeTags()
+    console.log(tagNames)
     const project = fakeProject(userId)
+    const tags = await db.Tag.bulkCreate(
+      tagNames.map((tagName) => ({ tag: tagName }))
+    )
+
+    console.log("tags created?", tags)
     const body = {
       project,
-      tagIds,
+      tagIds: tags.map((tag) => tag.id),
     }
+
+    console.log("body", body)
     // act
     const responseProject = await request
       .post("/projects/" + userId)
@@ -284,7 +296,7 @@ describe("/projects/:userId (post)", () => {
       .send(body)
 
     // assert
-    expect(responseProject.body).toBeDefined()
+    expect(responseProject.body.projectTags).toHaveLength(2)
     expect(responseProject.status).toBe(200)
     done()
   })
@@ -341,7 +353,7 @@ describe("/projects/:projectId (patch)", () => {
   test("should return an updated project", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
-    const { id: projectId } = await db.Projects.create(fakeProject(userId))
+    const { id: projectId } = await db.Project.create(fakeProject(userId))
     const body = {
       projectName: "New project",
       projectDescription: "Let's see if this works!",
@@ -367,7 +379,7 @@ describe("/projects/:projectId (delete)", () => {
   test("should return 204 if successful", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
-    const { id: projectId } = await db.Projects.create(fakeProject(userId))
+    const { id: projectId } = await db.Project.create(fakeProject(userId))
     const token = generateToken({ userId })
 
     //act
@@ -386,7 +398,7 @@ describe("/projects/:userId (get)", () => {
   test("should return all projects for a specific user", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
-    const createProject = await db.Projects.create(fakeProject(userId))
+    const createProject = await db.Project.create(fakeProject(userId))
 
     // act
     const responseProject = await request.get("/projects/" + userId).send()
@@ -405,8 +417,8 @@ describe("/projects/:projectId (get)", () => {
   test("should return the project with the associated id", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
-    const { id: projectId } = await db.Projects.create(fakeProject(userId))
-    const donation = await db.Donations.create(fakeDonation(projectId))
+    const { id: projectId } = await db.Project.create(fakeProject(userId))
+    const donation = await db.Donation.create(fakeDonation(projectId))
     // act
 
     // const responseProject = await request.get("/projects/" + projectId + "/donations").send()
@@ -414,7 +426,7 @@ describe("/projects/:projectId (get)", () => {
       .get(`/projects/${projectId}/donations`)
       .send()
     // assert
-    console.log("what is responseProject.body?", responseProject.body)
+    // console.log("what is responseProject.body?", responseProject.body)
     expect(responseProject.body).toBeDefined()
     expect(responseProject.status).toBe(200)
     done()

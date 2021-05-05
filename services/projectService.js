@@ -1,7 +1,7 @@
-const { Projects } = require("../models")
+const { Project } = require("../models")
 
 const findProjectById = async (projectId) => {
-  return await Projects.findOne({
+  return await Project.findOne({
     where: { id: projectId },
   })
 }

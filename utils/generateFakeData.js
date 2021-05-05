@@ -37,7 +37,7 @@ const fakeProject = (userId) => {
 }
 
 const fakeTags = () => {
-  return [tags[randomIndex(12)].id, tags[randomIndex(12)].id]
+  return [tags[randomIndex(12)], tags[randomIndex(12)]]
 }
 
 const fakeDonation = (projectId) => {

@@ -15,7 +15,7 @@ module.exports = {
     pool: {
       max: 4,
     },
-    logging: true,
+    logging: false,
   },
 
   production: {

@@ -2,7 +2,7 @@ const { Router } = require("express")
 
 const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
-const { Projects, Donations, Tags, ProjectsTags } = require("../models")
+const { Project, Donation, Tag, ProjectTag } = require("../models")
 const { userIdVerification } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
 const { findProjectById } = require("../services/projectService")
@@ -22,19 +22,17 @@ router.get("/", async (req, res) => {
   // }
 
   try {
-    const sortedByDate = await Projects.findAll({
+    const sortedByDate = await Project.findAll({
       limit: reqLimit || 10,
       offset: offset || 0,
       order: [["updatedAt", "DESC"]],
     })
-    const sortedByDonationAmount = await Projects.findAll({
-      include: {
-        model: Donations,
-        as: "donations",
-        // where: fn("sum", col("donationAmount")),
-        // where: Donations.sum("donationAmount"),
-      },
-    })
+    // const sortedByDonationAmount = await Projects.findAll({
+    //   include: {
+    //     model: Donations,
+    //     as: "donations",
+    //   },
+    // })
     if (req.query.sortBy) {
       // const sortingFunc = sortOptions[date] || sortOptions[donationAmount]
       res.json({ sortedByDate })
@@ -56,7 +54,7 @@ router.get("/", async (req, res) => {
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params
   try {
-    const projects = await Projects.findAll({ where: { userId } })
+    const projects = await Project.findAll({ where: { userId } })
     return res.json(projects)
   } catch (err) {
     return res.status(500).json(err)
@@ -81,52 +79,20 @@ router.post(
   userIdVerification,
   async (req, res) => {
     const { projectName, projectDescription } = req.body.project
-    // console.log("projectName: ", projectName)
-    const tagIds = req.body.tagIds
-    // const userId = await getVerifiedUserId(req, res)
+    const { tagIds } = req.body
     const { userId } = req.params
 
-    // returns either an undefined or the actual token.
     try {
       const user = await findUserById(userId)
-
-      const project = await Projects.create({
+      const project = await Project.create({
         projectName,
         projectDescription,
         userId: user.id,
       })
-
-      const projectTagData = tagIds.map((tagId) => {
-        return { projectId: project.id, tagId }
-      })
-
-      const projectTags = await ProjectsTags.bulkCreate(projectTagData)
-
-      console.log(projectTagData)
-      // project.addTags(tagIds[0])
-
-      // const promisedTags = []
-      // for (const tagId of tagIds) {
-      //   promisedTags.push(Tags.findOne({ where: { id: tagId } }))
-      // }
-      // const resolvedTags = await Promise.all(promisedTags)
-      // console.log("resolvedTags:", resolvedTags[0])
-
-      // await project.addTags(resolvedTags[0])
-      // const fetchedProject = await Projects.findOne({ include: Tags })
-      // console.log("fetchedProject:", fetchedProject)
-
-      // const projectWithAssociation = await Projects.findOne({
-      //   // where: { id: project.id },
-      //   include: {model: Tags},
-      // })
-
-      // const projectsTags = tagIds.map(async (tagId) => {
-      //   await ProjectsTags.create({ tagId, projectId })
-      // })
-
-      return res.json({ ...project.dataValues, projectTags })
+      const projectTagData = await project.addTags(tagIds)
+      return res.json({ ...project.dataValues, projectTags: projectTagData })
     } catch (err) {
+      console.log(err)
       return res.status(500).json(err.message)
     }
   }
@@ -138,7 +104,7 @@ router.post("/:projectId/donations/", async (req, res) => {
   try {
     const project = await findProjectById(projectId)
 
-    const donation = await Donations.create({
+    const donation = await Donation.create({
       projectId: project.id,
       donationAmount,
       comment,
@@ -153,7 +119,7 @@ router.patch("/:projectId", authenticateToken, async (req, res) => {
   const { projectId } = req.params
   const reqProject = req.body
   try {
-    const project = await Projects.findOne({
+    const project = await Project.findOne({
       where: { id: projectId },
     })
     // const project = await findProjectById(projectId)
@@ -168,7 +134,7 @@ router.patch("/:projectId", authenticateToken, async (req, res) => {
 router.delete("/:projectId", authenticateToken, async (req, res) => {
   const projectId = req.params.projectId
   try {
-    await Projects.destroy({ where: { id: projectId } })
+    await Project.destroy({ where: { id: projectId } })
     return res.status(204).json({ message: "Project deleted." })
   } catch (err) {
     return res.status(500).json({ error: "Something went wrong" })
