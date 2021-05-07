@@ -7,10 +7,11 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ User, Tag, Donation }) {
+    static associate({ User, Tag, Donation, ProjectTag }) {
       // define association here
       // foreignKey is from this table and belongs to User
       this.belongsTo(User, { foreignKey: "userId", as: "user" })
+      this.hasMany(ProjectTag, { foreignKey: "projectId" })
       this.belongsToMany(Tag, {
         through: "ProjectTag",
         foreignKey: "projectId",
@@ -25,10 +26,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   Projects.init(
     {
-      // uuid: {
-      //   type: DataTypes.UUID,
-      //   defaultValue: DataTypes.UUIDV4,
-      // },
       id: {
         allowNull: false,
         primaryKey: true,
@@ -64,7 +61,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
       },
     },
+
     {
+      scopes: {
+        recent: {
+          order: [["updatedAt", "DESC"]],
+        },
+        alphabetically: {
+          order: [["projectName", "ASC"]],
+        },
+      },
       sequelize,
       tableName: "projects",
       modelName: "Project",

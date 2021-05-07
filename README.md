@@ -7,7 +7,7 @@ POST:
 - ~~Signup~~
 - ~~Login~~
 - ~~Create a new project~~
-- Add a tag to a project
+- ~~Add a tag to a project~~
 
 GET:
 
@@ -17,11 +17,12 @@ PATCH/PUT:
 
 - ~~Update my user profile (first & last name, email, password, bank account)~~
 - ~~Update my projects name, description~~
-- Update my projects tags
+- ~~Update my projects tags~~
 
 DELETE:
 
 - ~~Delete projects~~
+- ~~Delete a tag from a project~~
 - ~~Delete my account~~
 
 ## Visitor

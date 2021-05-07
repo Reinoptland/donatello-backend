@@ -248,7 +248,8 @@ describe("/projects (get)", () => {
     // arrange
     const limit = 8
     const offset = 0
-    const sortBy = "date"
+    const sortBy = "recent"
+    // const sortBy = "date"
     const { id: userId } = await db.User.create(fakeUser())
 
     for (i = 0; i < 10; i++) {
@@ -264,8 +265,39 @@ describe("/projects (get)", () => {
     // assert
     expect(responseProject.body).toBeDefined()
     expect(responseProject.status).toBe(200)
-    const responseLength = responseProject.body.sortedByDate.length
+    const responseLength = responseProject.body.sortedProjects.length
     expect(responseLength).toBe(8)
+    done()
+  })
+  test("should return 8 projects sorted alphabetically", async (done) => {
+    // arrange
+    const limit = 8
+    const offset = 0
+    const sortBy = "alphabetically"
+    // const sortBy = "date"
+    const { id: userId } = await db.User.create(fakeUser())
+
+    for (i = 0; i < 10; i++) {
+      await db.Project.create(fakeProject(userId))
+    }
+    await db.Project.create({
+      projectName: "AAAAAA",
+      projectDescription: "first!",
+      userId: userId,
+    })
+
+    // act
+    const responseProject = await request
+      .get("/projects")
+      .query({ limit, offset, sortBy })
+      .send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
+    const responseLength = responseProject.body.sortedProjects.length
+    expect(responseLength).toBe(8)
+    expect(responseProject.body.sortedProjects[0].projectName).toBe("AAAAAA")
     done()
   })
 })
@@ -296,57 +328,61 @@ describe("/projects/:userId (post)", () => {
       .send(body)
 
     // assert
-    expect(responseProject.body.projectTags).toHaveLength(2)
+    expect(responseProject.body.ProjectTags).toHaveLength(2)
     expect(responseProject.status).toBe(200)
     done()
   })
 
-  // test("should NOT create a new project when sent a malformed access token", async (done) => {
-  //   const user = await fakeUser()
-  //   const newUser = await db.User.create(user)
-  //   const userId = newUser.id
-  //   // create a body with all the mandatory project data
-  //   const body = fakeProject(userId)
+  test.todo(
+    ""
 
-  //   // act
-  //   // send "bla" in the authorization header
-  //   const responseProject = await request
-  //     .post("/projects")
-  //     .set("Authorization", `Bearer "bla"`)
-  //     .send(body)
+    // test("should NOT create a new project when sent a malformed access token", async (done) => {
+    //   const user = await fakeUser()
+    //   const newUser = await db.User.create(user)
+    //   const userId = newUser.id
+    //   // create a body with all the mandatory project data
+    //   const body = fakeProject(userId)
 
-  //   // assert
-  //   expect(responseProject.status).toBe(401)
+    //   // act
+    //   // send "bla" in the authorization header
+    //   const responseProject = await request
+    //     .post("/projects")
+    //     .set("Authorization", `Bearer "bla"`)
+    //     .send(body)
 
-  //   done()
-  // })
+    //   // assert
+    //   expect(responseProject.status).toBe(401)
 
-  // test("should NOT create a new project when sent an expired access token", async (done) => {
-  //   // arrange
-  //   // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
-  //   const user = await fakeUser()
-  //   const newUser = await db.User.create(user)
-  //   const userId = newUser.id
-  //   const body = fakeProject(userId)
+    //   done()
+    // })
 
-  //   const userIdObj = { userId }
-  //   const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
-  //     expiresIn: "-10s",
-  //   })
+    // test("should NOT create a new project when sent an expired access token", async (done) => {
+    //   // arrange
+    //   // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
+    //   const user = await fakeUser()
+    //   const newUser = await db.User.create(user)
+    //   const userId = newUser.id
+    //   const body = fakeProject(userId)
 
-  //   // act
-  //   // send the expired token in the authorization header
-  //   const responseProject = await request
-  //     .post("/projects")
-  //     .set("Authorization", `Bearer ${token}`)
-  //     .send(body)
+    //   const userIdObj = { userId }
+    //   const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
+    //     expiresIn: "-10s",
+    //   })
 
-  //   // assert
-  //   // status 401
-  //   expect(responseProject.status).toBe(401)
+    //   // act
+    //   // send the expired token in the authorization header
+    //   const responseProject = await request
+    //     .post("/projects")
+    //     .set("Authorization", `Bearer ${token}`)
+    //     .send(body)
 
-  //   done()
-  // })
+    //   // assert
+    //   // status 401
+    //   expect(responseProject.status).toBe(401)
+
+    //   done()
+    // })
+  )
 })
 
 describe("/projects/:projectId (patch)", () => {
@@ -354,11 +390,12 @@ describe("/projects/:projectId (patch)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const { id: projectId } = await db.Project.create(fakeProject(userId))
+    const token = generateToken({ userId })
+
     const body = {
       projectName: "New project",
       projectDescription: "Let's see if this works!",
     }
-    const token = generateToken({ userId })
 
     // act
     const responseUpdatedProject = await request
@@ -368,9 +405,105 @@ describe("/projects/:projectId (patch)", () => {
 
     // assert
     expect(responseUpdatedProject.body).toBeDefined()
+    // expect(responseUpdatedProject.body).toBe(null)
     expect(responseUpdatedProject.status).toBe(200)
     const responseProjectName = responseUpdatedProject.body.projectName
     expect(responseProjectName).toBe(body.projectName)
+    done()
+  })
+  test("should return an updated project", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const { id: projectId } = await db.Project.create(fakeProject(userId))
+    const token = generateToken({ userId })
+
+    const body = {
+      projectName: "New project",
+      projectDescription: "Let's see if this works!",
+      somethingElse: "blaaa",
+    }
+
+    // act
+    const responseUpdatedProject = await request
+      .patch("/projects/" + projectId)
+      .set("Authorization", `Bearer ${token}`)
+      .send(body)
+
+    // assert
+    expect(responseUpdatedProject.body).toBeDefined()
+    const expectedResponse =
+      "somethingElse can't be updated. Only projectName and projectDescription can be updated."
+    expect(responseUpdatedProject.body).toBe(expectedResponse)
+    expect(responseUpdatedProject.status).toBe(403)
+    done()
+  })
+})
+
+describe("/projects/:projectId/tags (post)", () => {
+  test("should return an updated tag", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const tagNames = fakeTags()
+
+    const tags = await db.Tag.bulkCreate(
+      tagNames.map((tagName) => ({ tag: tagName }))
+    )
+    const tagIds = tags.map((tag) => tag.id)
+    const projectDBCreated = await db.Project.create(fakeProject(userId))
+
+    console.log("projectDBCreated?", projectDBCreated)
+    const projectId = projectDBCreated.id
+    const body = {
+      tagIds,
+    }
+    console.log("body", body)
+    const token = generateToken({ userId })
+
+    // act
+    const responseUpdatedTags = await request
+      .post("/projects/" + projectId + "/tags")
+      .set("Authorization", `Bearer ${token}`)
+      .send(body)
+
+    // assert
+    expect(responseUpdatedTags.body).toBeDefined()
+    expect(responseUpdatedTags.body).toHaveLength(2)
+    expect(responseUpdatedTags.body[0].projectId).toBe(projectId)
+    expect(responseUpdatedTags.status).toBe(200)
+    done()
+  })
+})
+
+describe("/projects/:projectId/tags/:tagId (delete)", () => {
+  test("should return 204 if successful", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const tagNames = fakeTags()
+
+    const tags = await db.Tag.bulkCreate(
+      tagNames.map((tagName) => ({ tag: tagName }))
+    )
+    const tagIds = tags.map((tag) => ({ tagId: tag.id }))
+    const projectDBCreated = await db.Project.create(
+      {
+        ...fakeProject(userId),
+        ProjectTags: tagIds,
+      },
+      { include: [db.ProjectTag] }
+    )
+
+    const projectId = projectDBCreated.id
+    const tagId = projectDBCreated.ProjectTags[0].tagId
+    const token = generateToken({ userId })
+
+    //act
+    const responseDeletedProject = await request
+      .delete(`/projects/${projectId}/tags/${tagId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseDeletedProject.status).toBe(204)
     done()
   })
 })
