@@ -1,7 +1,7 @@
-const { Donations } = require("../models")
+const { Donation } = require("../models")
 
 const findDonationById = async (projectId) => {
-  return await Donations.findAll({
+  return await Donation.findAll({
     where: { projectId },
   })
 }

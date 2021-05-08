@@ -7,9 +7,13 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ Projects }) {
+    static associate({ Project }) {
       // define association here
-      this.belongsToMany(Projects, { through: "ProjectsTags" })
+      this.belongsToMany(Project, {
+        through: "ProjectTag",
+        foreignKey: "tagId",
+        otherKey: "projectId",
+      })
     }
     toJSON() {
       return { ...this.get(), id: undefined }
@@ -30,16 +34,18 @@ module.exports = (sequelize, DataTypes) => {
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
+        defaultValue: sequelize.literal("NOW()"),
       },
       updatedAt: {
         allowNull: false,
         type: DataTypes.DATE,
+        defaultValue: sequelize.literal("NOW()"),
       },
     },
     {
       sequelize,
       tableName: "tags",
-      modelName: "Tags",
+      modelName: "Tag",
     }
   )
   return Tags

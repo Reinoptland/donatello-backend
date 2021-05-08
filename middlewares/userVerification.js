@@ -1,5 +1,6 @@
 require("dotenv").config()
 const jwt = require("jsonwebtoken")
+const { findProjectById } = require("../services/projectService")
 
 const userIdFromToken = (headers) => {
   const authHeader = headers["authorization"]
@@ -16,4 +17,15 @@ const userIdVerification = async (req, res, next) => {
   next()
 }
 
-module.exports = { userIdVerification }
+const userIdVerificationFromProject = async (req, res, next) => {
+  const { projectId } = req.params
+  const project = await findProjectById(projectId)
+  const userIdFrProject = project.userId
+  const userIdFrToken = await userIdFromToken(req.headers)
+  if (userIdFrProject !== userIdFrToken)
+    return res.status(401).json("user Id is different")
+  req.project = project
+  next()
+}
+
+module.exports = { userIdVerification, userIdVerificationFromProject }

@@ -3,14 +3,14 @@ const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
 const { userIdVerification } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
-const { User, Projects } = require("../models")
+const { User, Project } = require("../models")
 
 router.post("/", async (req, res) => {
   try {
     const user = await User.create({ ...req.body })
     return res.json(user)
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     return res.status(400).json(err.message)
   }
 })
@@ -42,13 +42,17 @@ router.patch(
     // const userId = await getVerifiedUserId(req, res)
     const { userId } = req.params
 
+    // console.log("reqUser:", reqUser)
     const reqUser = req.body
     try {
+      if (Object.keys(reqUser).length === 0) {
+        return res.status(400).json("Nothing to update.")
+      }
       const user = await findUserById(userId)
       const updatedUser = await user.update({ ...reqUser })
       return res.json(updatedUser)
     } catch (err) {
-      return res.status(500).json(err.message)
+      return res.status(400).json(err.message)
     }
   }
 )
@@ -62,7 +66,7 @@ router.delete(
     const { userId } = req.params
 
     try {
-      await Projects.destroy({ where: { userId: userId } })
+      await Project.destroy({ where: { userId: userId } })
       await User.destroy({ where: { id: userId } })
       return res.status(204).json({ message: "User & projects deleted" })
     } catch (err) {

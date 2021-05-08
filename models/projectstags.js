@@ -7,8 +7,9 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate({ models }) {
+    static associate({ Project }) {
       // define association here
+      this.belongsTo(Project, { foreignKey: "projectId" })
     }
   }
   ProjectsTags.init(
@@ -19,25 +20,27 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      // projectId: {
-      //   type: DataTypes.UUID,
-      // },
-      // tagId: {
-      //   type: DataTypes.UUID,
-      // },
+      projectId: {
+        type: DataTypes.UUID,
+      },
+      tagId: {
+        type: DataTypes.UUID,
+      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
+        defaultValue: sequelize.literal("NOW()"),
       },
       updatedAt: {
         allowNull: false,
         type: DataTypes.DATE,
+        defaultValue: sequelize.literal("NOW()"),
       },
     },
     {
       sequelize,
       tableName: "projectstags",
-      modelName: "ProjectsTags",
+      modelName: "ProjectTag",
     }
   )
   return ProjectsTags

@@ -20,6 +20,14 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      totalDonationAmount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      totalDonationCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       userId: {
         type: DataTypes.UUID,
         allowNull: false,
