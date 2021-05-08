@@ -11,10 +11,6 @@ const { findUserById } = require("../services/userService")
 const { findProjectById } = require("../services/projectService")
 const { findDonationById } = require("../services/donationService")
 
-// - Get the 10 most recent projects (x number per page)
-// - Get the 10 most funded projects based on amount
-// - Get the 10 most popular projects based on number of transactions
-
 router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10
   const reqOffset = req.query.offset || 0
@@ -26,22 +22,8 @@ router.get("/", async (req, res) => {
       offset: reqOffset,
     })
 
-    // const sortedByDate = await Project.findAll({
-    //   limit: reqLimit || 10,
-    //   offset: offset || 0,
-    //   order: [["updatedAt", "DESC"]],
-    // })
-    // const sortedByDonationAmount = await Projects.findAll({
-    //   include: {
-    //     model: Donations,
-    //     as: "donations",
-    //   },
-    // })
-
-    // const sortingFunc = sortOptions[date] || sortOptions[donationAmount]
     res.json({ sortedProjects })
   } catch (error) {
-    console.log("ERROR:", error)
     return res.status(500).json(error)
   }
 })
@@ -65,6 +47,34 @@ router.get("/:projectId/donations", async (req, res) => {
     return res.json(response)
   } catch (err) {
     return res.status(500).json(err)
+  }
+})
+
+// this should return a redirect url for the payment
+router.post("/:projectId/donations/", async (req, res) => {
+  const { donationAmount, comment } = req.body
+  console.log("projectId?", req.params.projectId)
+
+  try {
+    const donation = await Donation.create({
+      projectId: req.params.projectId,
+      donationAmount,
+      comment,
+    })
+
+    const projectToUpdate = await findProjectById(donation.projectId)
+    const updatedDonationAmount =
+      projectToUpdate.totalDonationAmount + donation.donationAmount
+    const updatedDonationCount = projectToUpdate.totalDonationCount + 1
+
+    await projectToUpdate.update({
+      totalDonationAmount: updatedDonationAmount,
+      totalDonationCount: updatedDonationCount,
+    })
+    return res.json(donation)
+  } catch (error) {
+    console.log(error.message)
+    return res.status(500).json(error)
   }
 })
 
@@ -96,21 +106,6 @@ router.post(
     }
   }
 )
-
-// this should return a redirect url for the payment
-router.post("/:projectId/donations/", async (req, res) => {
-  const { donationAmount, comment } = req.body
-  try {
-    const donation = await Donation.create({
-      projectId: req.project.id,
-      donationAmount,
-      comment,
-    })
-    return res.json(donation)
-  } catch (error) {
-    return res.status(500).json(error)
-  }
-})
 
 router.post(
   "/:projectId/tags",

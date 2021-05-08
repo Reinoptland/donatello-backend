@@ -48,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: { msg: "Project description must not be empty." },
         },
       },
+      totalDonationAmount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      totalDonationCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       userId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -66,6 +74,12 @@ module.exports = (sequelize, DataTypes) => {
       scopes: {
         recent: {
           order: [["updatedAt", "DESC"]],
+        },
+        totalDonationAmount: {
+          order: [["totalDonationAmount", "DESC"]],
+        },
+        totalDonationCount: {
+          order: [["totalDonationCount", "DESC"]],
         },
         alphabetically: {
           order: [["projectName", "ASC"]],

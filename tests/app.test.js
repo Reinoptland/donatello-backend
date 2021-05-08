@@ -474,6 +474,34 @@ describe("/projects/:projectId/tags (post)", () => {
   })
 })
 
+describe("/projects/:projectId/donations (post)", () => {
+  test("should return a new donation", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const projectDBCreated = await db.Project.create(fakeProject(userId))
+
+    const projectId = projectDBCreated.id
+    const body = {
+      donationAmount: 45,
+      comment: "this is a donation",
+    }
+
+    // act
+    const responseUpdatedTags = await request
+      .post("/projects/" + projectId + "/donations")
+      .send(body)
+
+    // assert
+    expect(responseUpdatedTags.body).toBeDefined()
+    expect(responseUpdatedTags.status).toBe(200)
+    const projectUpdated = await db.Project.findOne({
+      where: { id: projectId },
+    })
+    expect(projectUpdated.totalDonationAmount).toBe(45)
+    done()
+  })
+})
+
 describe("/projects/:projectId/tags/:tagId (delete)", () => {
   test("should return 204 if successful", async (done) => {
     // arrange
