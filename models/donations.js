@@ -28,15 +28,24 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       donationAmount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
         validate: {
           notNull: { msg: "Donation amount cannot be null." },
-          notEmpty: { msg: "Password must not be empty." },
+          notEmpty: { msg: "Donation amount must not be empty." },
         },
       },
       comment: {
         type: DataTypes.STRING,
+      },
+      paymentId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      paymentStatus: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "open",
       },
       createdAt: {
         allowNull: false,

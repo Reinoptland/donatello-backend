@@ -31,9 +31,9 @@ GET:
 
 Can be combined in one endpoint
 
-- Get the 10 most recent projects (x number per page)
-- Get the 10 most funded projects based on amount
-- Get the 10 most popular projects based on number of transactions
+- ~~Get the 10 most recent projects (x number per page)~~
+- ~~Get the 10 most funded projects based on amount~~
+- ~~Get the 10 most popular projects based on number of transactions~~
 
 - Search projects by tags
 
@@ -48,4 +48,13 @@ GET:
 
 POST:
 
-- ~~Make a new donation for a specific project~~
+- Make a new donation for a specific project POST projects/:projectId/donations
+  - Create a donation
+  - Create a mollie payment
+  - store the payment id in the donation "tr_bla"
+  - add the needed columns to the Donation model - status and payment id
+- Webhook to update status of payments & total amount & count POST /webhooks/transactions
+  - Find the donation by the payment id
+  - Find donation by the payment id from mollie
+  - Update the status of the donation
+  - If status was Paid -> update the projects total amount & count

@@ -22,11 +22,20 @@ module.exports = {
         },
       },
       donationAmount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
       comment: {
         type: DataTypes.STRING,
+      },
+      paymentId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      paymentStatus: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "open",
       },
       createdAt: {
         allowNull: false,

@@ -21,7 +21,7 @@ module.exports = {
         allowNull: false,
       },
       totalDonationAmount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         defaultValue: 0,
       },
       totalDonationCount: {

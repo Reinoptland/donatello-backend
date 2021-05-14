@@ -1,8 +1,7 @@
 const { Router } = require("express")
-
 const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
-const { Project, Donation, Tag, ProjectTag } = require("../models")
+const { Project, Donation, ProjectTag } = require("../models")
 const {
   userIdVerification,
   userIdVerificationFromProject,
@@ -10,6 +9,11 @@ const {
 const { findUserById } = require("../services/userService")
 const { findProjectById } = require("../services/projectService")
 const { findDonationById } = require("../services/donationService")
+const { createMollieClient } = require("@mollie/api-client")
+
+const mollieClient = createMollieClient({
+  apiKey: "test_3z3UFCnV8se28svBge5BEEmMxfGdVH",
+})
 
 router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10
@@ -50,28 +54,28 @@ router.get("/:projectId/donations", async (req, res) => {
   }
 })
 
-// this should return a redirect url for the payment
 router.post("/:projectId/donations/", async (req, res) => {
   const { donationAmount, comment } = req.body
-  console.log("projectId?", req.params.projectId)
-
+  const projectId = req.params.projectId
+  const mollieObject = {
+    amount: {
+      value: donationAmount,
+      currency: "EUR",
+    },
+    description: comment,
+    redirectUrl: `https://www.google.com/`,
+    webhookUrl: `https://af393f153e1e.ngrok.io/webhooks/transactions`,
+  }
   try {
-    const donation = await Donation.create({
-      projectId: req.params.projectId,
+    const payment = await mollieClient.payments.create(mollieObject)
+    await Donation.create({
+      projectId,
       donationAmount,
       comment,
+      paymentId: payment.id,
     })
 
-    const projectToUpdate = await findProjectById(donation.projectId)
-    const updatedDonationAmount =
-      projectToUpdate.totalDonationAmount + donation.donationAmount
-    const updatedDonationCount = projectToUpdate.totalDonationCount + 1
-
-    await projectToUpdate.update({
-      totalDonationAmount: updatedDonationAmount,
-      totalDonationCount: updatedDonationCount,
-    })
-    return res.json(donation)
+    return res.json({ payment })
   } catch (error) {
     console.log(error.message)
     return res.status(500).json(error)
@@ -130,7 +134,6 @@ router.patch(
     // const {projectNewData} = req.body
     const requestBody = req.body
     const reqBodyKeys = Object.keys(requestBody)
-    console.log("reqBodyKeys", reqBodyKeys)
 
     for (const projectKey of reqBodyKeys) {
       if (

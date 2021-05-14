@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@mollie/api-client": "^3.5.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "faker": "^5.5.3",

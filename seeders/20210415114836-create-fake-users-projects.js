@@ -61,11 +61,13 @@ module.exports = {
     await queryInterface.bulkInsert("projects", projects, {})
 
     const projectsArray = await Project.findAll()
-
+    const paymentStatusArray = ["open", "paid", "expired", "failed", "canceled"]
     const donations = [...Array(100)].map((donation) => ({
       id: faker.datatype.uuid(),
       donationAmount: faker.datatype.number(1000),
       projectId: projectsArray[randomIndex(99)].id,
+      paymentId: "tr_" + faker.datatype.string(10),
+      paymentStatus: paymentStatusArray[randomIndex(4)],
       createdAt: new Date(),
       updatedAt: new Date(),
     }))

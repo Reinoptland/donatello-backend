@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       totalDonationAmount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         defaultValue: 0,
       },
       totalDonationCount: {

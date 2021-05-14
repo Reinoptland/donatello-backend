@@ -199,8 +199,6 @@ describe("/users/:userId (patch)", () => {
 
     // assert
 
-    console.log("updated user:", responseUpdatedUser.body)
-
     expect(responseUpdatedUser.body).toBeDefined()
     expect(responseUpdatedUser.status).toBe(400)
     done()
@@ -308,19 +306,16 @@ describe("/projects/:userId (post)", () => {
     const { id: userId } = await db.User.create(fakeUser())
     const token = generateToken({ userId })
     const tagNames = fakeTags()
-    console.log(tagNames)
     const project = fakeProject(userId)
     const tags = await db.Tag.bulkCreate(
       tagNames.map((tagName) => ({ tag: tagName }))
     )
 
-    console.log("tags created?", tags)
     const body = {
       project,
       tagIds: tags.map((tag) => tag.id),
     }
 
-    console.log("body", body)
     // act
     const responseProject = await request
       .post("/projects/" + userId)
@@ -451,12 +446,10 @@ describe("/projects/:projectId/tags (post)", () => {
     const tagIds = tags.map((tag) => tag.id)
     const projectDBCreated = await db.Project.create(fakeProject(userId))
 
-    console.log("projectDBCreated?", projectDBCreated)
     const projectId = projectDBCreated.id
     const body = {
       tagIds,
     }
-    console.log("body", body)
     const token = generateToken({ userId })
 
     // act
@@ -487,17 +480,15 @@ describe("/projects/:projectId/donations (post)", () => {
     }
 
     // act
-    const responseUpdatedTags = await request
-      .post("/projects/" + projectId + "/donations")
+    const responseDonation = await request
+      .post("/projects/" + projectId + "/donations/")
       .send(body)
 
     // assert
-    expect(responseUpdatedTags.body).toBeDefined()
-    expect(responseUpdatedTags.status).toBe(200)
-    const projectUpdated = await db.Project.findOne({
-      where: { id: projectId },
-    })
-    expect(projectUpdated.totalDonationAmount).toBe(45)
+    expect(responseDonation.body).toBeDefined()
+    expect(responseDonation.body).toBe(null)
+
+    expect(responseDonation.status).toBe(200)
     done()
   })
 })
@@ -571,28 +562,5 @@ describe("/projects/:userId (get)", () => {
   })
   test.todo(
     "/projects/:userId should return an error if the user doesn't have any projects"
-  )
-})
-
-describe("/projects/:projectId (get)", () => {
-  test("should return the project with the associated id", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const { id: projectId } = await db.Project.create(fakeProject(userId))
-    const donation = await db.Donation.create(fakeDonation(projectId))
-    // act
-
-    // const responseProject = await request.get("/projects/" + projectId + "/donations").send()
-    const responseProject = await request
-      .get(`/projects/${projectId}/donations`)
-      .send()
-    // assert
-    // console.log("what is responseProject.body?", responseProject.body)
-    expect(responseProject.body).toBeDefined()
-    expect(responseProject.status).toBe(200)
-    done()
-  })
-  test.todo(
-    "/projects/:projectId should return an error when the associated project id is missing in the db"
   )
 })
