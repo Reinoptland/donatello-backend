@@ -32,9 +32,9 @@ afterAll(async () => {
 describe("/login", () => {
   test("should respond with an access token when email and password match", async (done) => {
     // arrange
-    const { id, email, password } = await db.User.create(fakeUser())
-    const body = { email, password }
-
+    const fakeUserData = fakeUser()
+    const { id, email } = await db.User.create(fakeUserData)
+    const body = { email, password: fakeUserData.password }
     // act
     const responseToken = await request.post("/login").send(body)
 
@@ -60,7 +60,7 @@ describe("/login", () => {
     const responseToken = await request.post("/login").send(body)
 
     // assert
-    expect(responseToken.status).toBe(404)
+    expect(responseToken.status).toBe(500)
     done()
   })
 
@@ -83,7 +83,7 @@ describe("/users", () => {
     // arrange
     const body = fakeUser()
     // act
-    const response = await request.post("/users").send(body)
+    const response = await request.post("/users/user").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(200)
@@ -98,7 +98,7 @@ describe("/users", () => {
     body.password = "pass"
 
     // act
-    const response = await request.post("/users").send(body)
+    const response = await request.post("/users/user").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(400)
@@ -110,7 +110,7 @@ describe("/users", () => {
     await db.User.create(body)
 
     // act
-    const response = await request.post("/users").send(body)
+    const response = await request.post("/users/user").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(400)

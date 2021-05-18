@@ -8,7 +8,7 @@ const users = [...Array(100)].map((user) => ({
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   email: faker.internet.email(),
-  password: faker.internet.password(8),
+  password: "fakepassword",
   bankAccount: faker.finance.iban(),
   createdAt: new Date(),
   updatedAt: new Date(),

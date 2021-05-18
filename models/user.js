@@ -1,5 +1,8 @@
 "use strict"
 const { Model } = require("sequelize")
+const bcrypt = require("bcrypt")
+const saltRound = 10
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -7,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
+    async comparePassword(passwordInput) {
+      return await bcrypt.compare(passwordInput, this.password)
+    }
     static associate({ Project }) {
       // define association here
       this.hasMany(Project, { foreignKey: "userId", as: "projects" })
@@ -86,6 +92,15 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       tableName: "users",
       modelName: "User",
+      hooks: {
+        async beforeCreate(instance, options) {
+          const hashedPassword = await bcrypt.hash(
+            instance.dataValues.password,
+            saltRound
+          )
+          instance.password = hashedPassword
+        },
+      },
     }
   )
   return User

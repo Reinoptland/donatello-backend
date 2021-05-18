@@ -8,10 +8,12 @@ router.post("/", async (req, res) => {
 
   try {
     const user = await User.findOne({
-      where: { email, password },
+      where: { email },
+      // where: { email, password },
     })
-    if (!user)
-      return res.status(404).json("An account with this email cannot be found")
+    const passwordMatch = await user.comparePassword(password)
+    if (!passwordMatch)
+      return res.status(404).json("The email & password do not match")
     const userUuid = { userId: user.id }
     const token = generateToken(userUuid)
     return res.json({ token })
