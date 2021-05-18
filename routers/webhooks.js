@@ -8,9 +8,8 @@ const mollieClient = createMollieClient({
   apiKey: "test_3z3UFCnV8se28svBge5BEEmMxfGdVH",
 })
 
-router.post("webhooks/transactions", async (req, res) => {
+router.post("/transactions", async (req, res) => {
   const id = req.body.id
-  const projectId = req.params.projectId
 
   try {
     const payment = await mollieClient.payments.get(id)
@@ -22,7 +21,7 @@ router.post("webhooks/transactions", async (req, res) => {
     })
 
     if (updatedDonation.paymentStatus === "paid") {
-      const projectToUpdate = await findProjectById(projectId)
+      const projectToUpdate = await findProjectById(donation.projectId)
       const updatedDonationAmount =
         projectToUpdate.totalDonationAmount + Number(donation.donationAmount)
       const updatedDonationCount = projectToUpdate.totalDonationCount + 1
@@ -33,6 +32,7 @@ router.post("webhooks/transactions", async (req, res) => {
     }
     return res.status(200).json("OK")
   } catch (err) {
+    console.log(err)
     return res.status(500).json(err)
   }
 })

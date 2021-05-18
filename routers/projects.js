@@ -64,8 +64,9 @@ router.post("/:projectId/donations/", async (req, res) => {
     },
     description: comment,
     redirectUrl: `https://www.google.com/`,
-    webhookUrl: `https://af393f153e1e.ngrok.io/webhooks/transactions`,
+    webhookUrl: `https://a1ed8cc2844b.ngrok.io/webhooks/transactions`,
   }
+  console.log("mollieObject:", mollieObject)
   try {
     const payment = await mollieClient.payments.create(mollieObject)
     await Donation.create({
@@ -77,7 +78,7 @@ router.post("/:projectId/donations/", async (req, res) => {
 
     return res.json({ payment })
   } catch (error) {
-    console.log(error.message)
+    console.log(error)
     return res.status(500).json(error)
   }
 })

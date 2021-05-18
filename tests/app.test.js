@@ -475,8 +475,8 @@ describe("/projects/:projectId/donations (post)", () => {
 
     const projectId = projectDBCreated.id
     const body = {
-      donationAmount: 45,
-      comment: "this is a donation",
+      donationAmount: "2.00",
+      comment: "TEST",
     }
 
     // act
@@ -486,8 +486,6 @@ describe("/projects/:projectId/donations (post)", () => {
 
     // assert
     expect(responseDonation.body).toBeDefined()
-    expect(responseDonation.body).toBe(null)
-
     expect(responseDonation.status).toBe(200)
     done()
   })
