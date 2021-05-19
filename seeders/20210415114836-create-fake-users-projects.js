@@ -3,8 +3,6 @@ const { User, Project, Donation, Tag } = require("../models")
 const bcrypt = require("bcrypt")
 const saltRound = 10
 
-// ;("use strict")
-
 const users = [...Array(100)].map((user) => ({
   id: faker.datatype.uuid(),
   firstName: faker.name.firstName(),
@@ -74,11 +72,6 @@ module.exports = {
       updatedAt: new Date(),
     }))
 
-    // [{projectId: 1, amount: 2000, count: 4}, {projectId: 2, amount: 2000, count: 4}]
-    // projects.find().amount += donationAmount
-    // {1: {amount: 2000, count:4}, 2: {amount: 2000, count: 4}}
-    // projects[projectId].amount += donationAmount
-
     let projectTotals = {}
     for (const donation of donations) {
       if (projectTotals.hasOwnProperty(donation.projectId)) {
@@ -92,7 +85,6 @@ module.exports = {
         }
       }
     }
-    console.log("projectTotals:", projectTotals)
 
     Object.keys(projectTotals).forEach(async (id) => {
       await Project.update(projectTotals[id], { where: { id: id } })

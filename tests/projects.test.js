@@ -2,7 +2,6 @@ const app = require("../app")
 const supertest = require("supertest")
 const request = supertest(app)
 const db = require("../models")
-const jwt = require("jsonwebtoken")
 const { generateToken } = require("../utils/generateToken")
 const {
   fakeUser,
@@ -27,218 +26,6 @@ afterAll(async () => {
   await db.Project.destroy({ where: {} })
   await db.User.destroy({ where: {} })
   await db.sequelize.close()
-})
-
-describe("/login", () => {
-  test("should respond with an access token when email and password match", async (done) => {
-    // arrange
-    const fakeUserData = fakeUser()
-    const { id, email } = await db.User.create(fakeUserData)
-    const body = { email, password: fakeUserData.password }
-    // act
-    const responseToken = await request.post("/login").send(body)
-
-    // assert
-    expect(responseToken.body.token).toBeDefined()
-    expect(responseToken.status).toBe(200)
-    const userToken = await jwt.verify(
-      responseToken.body.token,
-      process.env.TOKEN_SECRET
-    )
-    expect(userToken.userId).toBe(id)
-    done()
-  })
-
-  test("should respond with an error when a user doesn't exist in the db", async (done) => {
-    // arrange
-    const body = {
-      email: "natalia@email.com",
-      password: "password",
-    }
-
-    // act
-    const responseToken = await request.post("/login").send(body)
-
-    // assert
-    expect(responseToken.status).toBe(500)
-    done()
-  })
-
-  test("should respond with an error when a user exists but the password doesn't match in the db", async (done) => {
-    // arrange
-    const { email } = await db.User.create(fakeUser())
-    const body = { email, password: "blabla" }
-
-    // act
-    const responseToken = await request.post("/login").send(body)
-
-    // assert
-    expect(responseToken.status).toBe(404)
-    done()
-  })
-})
-
-describe("/users", () => {
-  test("should create a new user", async (done) => {
-    // arrange
-    const body = fakeUser()
-    // act
-    const response = await request.post("/users").send(body)
-    // assert
-    expect(response.body).toBeDefined()
-    expect(response.status).toBe(200)
-    const createdUser = await db.User.findOne({ where: { email: body.email } })
-    expect(createdUser).not.toBe(null)
-    done()
-  })
-
-  test("should return an error if password is shorter than 6 characters", async (done) => {
-    // arrange
-    const body = fakeUser()
-    body.password = "pass"
-
-    // act
-    const response = await request.post("/users").send(body)
-    // assert
-    expect(response.body).toBeDefined()
-    expect(response.status).toBe(400)
-    done()
-  })
-  test("should return an error if an account with the email already exists", async (done) => {
-    // arrange
-    const body = fakeUser()
-    await db.User.create(body)
-
-    // act
-    const response = await request.post("/users").send(body)
-    // assert
-    expect(response.body).toBeDefined()
-    expect(response.status).toBe(400)
-    done()
-  })
-})
-
-describe("/users/:userId (get)", () => {
-  test("should return an overview of user", async (done) => {
-    // arrange
-    const { id: userId, firstName } = await db.User.create(fakeUser())
-    const token = generateToken({ userId })
-
-    // act
-    const responseUpdatedUser = await request
-      .get("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send()
-
-    // assert
-    expect(responseUpdatedUser.body).toBeDefined()
-    expect(responseUpdatedUser.status).toBe(200)
-    const responseFirstName = responseUpdatedUser.body.firstName
-    expect(responseFirstName).toBe(firstName)
-    done()
-  })
-  test("should NOT return user data if token userId is different from param userId", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const token = generateToken({ userId })
-
-    // act
-    const responseUpdatedUser = await request
-      .get("/users/" + "bla")
-      .set("Authorization", `Bearer ${token}`)
-      .send()
-
-    // assert
-    expect(responseUpdatedUser.body).toBeDefined()
-    expect(responseUpdatedUser.status).toBe(401)
-    done()
-  })
-})
-
-describe("/users/:userId (patch)", () => {
-  test("should return an updated user", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const body = {
-      id: userId,
-      firstName: "Natalia",
-      email: "natalia@email.com",
-    }
-    const token = generateToken({ userId })
-
-    // act
-    const responseUpdatedUser = await request
-      .patch("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send(body)
-
-    // assert
-    expect(responseUpdatedUser.body).toBeDefined()
-    expect(responseUpdatedUser.status).toBe(200)
-    const responseFirstName = responseUpdatedUser.body.firstName
-    expect(responseFirstName).toBe(body.firstName)
-    done()
-  })
-  test("should return an error if send wrong data", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const token = generateToken({ userId })
-    const body = {
-      // name: "bla",
-      // email: "email",
-      // id: userId,
-      // firstName: "Natalia",
-      // email: "natalia@email.com",
-    }
-
-    // act
-    const responseUpdatedUser = await request
-      .patch("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send(body)
-
-    // assert
-
-    expect(responseUpdatedUser.body).toBeDefined()
-    expect(responseUpdatedUser.status).toBe(400)
-    done()
-  })
-})
-
-describe("/users/:userId (delete)", () => {
-  test(" should return 204 if successful", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const token = generateToken({ userId })
-    const createProject = await db.Project.create(fakeProject(userId))
-
-    //act
-    const responseDeletedUser = await request
-      .delete("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send()
-
-    // assert
-    expect(responseDeletedUser.status).toBe(204)
-    done()
-  })
-  test(" should return 401 if passed wrong userId", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const token = generateToken({ userId: 5 })
-    const createProject = await db.Project.create(fakeProject(userId))
-
-    //act
-    const responseDeletedUser = await request
-      .delete("/users/" + userId)
-      .set("Authorization", `Bearer ${token}`)
-      .send()
-
-    // assert
-    expect(responseDeletedUser.status).toBe(401)
-
-    done()
-  })
 })
 
 describe("/projects (get)", () => {
@@ -406,7 +193,7 @@ describe("/projects/:projectId (patch)", () => {
     expect(responseProjectName).toBe(body.projectName)
     done()
   })
-  test("should return an updated project", async (done) => {
+  test("should return an error if user tries to update something they shouldn't", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const { id: projectId } = await db.Project.create(fakeProject(userId))
@@ -428,7 +215,7 @@ describe("/projects/:projectId (patch)", () => {
     expect(responseUpdatedProject.body).toBeDefined()
     const expectedResponse =
       "somethingElse can't be updated. Only projectName and projectDescription can be updated."
-    expect(responseUpdatedProject.body).toBe(expectedResponse)
+    expect(responseUpdatedProject.body.message).toBe(expectedResponse)
     expect(responseUpdatedProject.status).toBe(403)
     done()
   })
