@@ -4,11 +4,20 @@ const { authenticateToken } = require("../middlewares/auth")
 const { userIdVerification } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
 const { User, Project } = require("../models")
+const { generateToken } = require("../utils/generateToken")
 
 router.post("/", async (req, res) => {
   try {
-    await User.create({ ...req.body })
-    return res.json("Account successfully created")
+    const user = await User.create({ ...req.body })
+    const token = generateToken({ userId: user.id })
+    return res.json({
+      token,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      bankAccount: user.bankAccount,
+      message: "Account successfully created.",
+    })
   } catch (err) {
     // console.log(err)
     return res.status(400).json(err.message)
