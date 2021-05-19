@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
 
     res.json({ sortedProjects })
   } catch (error) {
-    return res.status(500).json(error)
+    return res.status(500).json({ message: error.message, error })
   }
 })
 
@@ -37,8 +37,8 @@ router.get("/:userId", async (req, res) => {
   try {
     const projects = await Project.findAll({ where: { userId } })
     return res.json(projects)
-  } catch (err) {
-    return res.status(500).json(err)
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error })
   }
 })
 
@@ -49,8 +49,8 @@ router.get("/:projectId/donations", async (req, res) => {
     const donations = await findDonationById(projectId)
     const response = { project, donations }
     return res.json(response)
-  } catch (err) {
-    return res.status(500).json(err)
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error })
   }
 })
 
@@ -66,7 +66,6 @@ router.post("/:projectId/donations/", async (req, res) => {
     redirectUrl: `https://www.google.com/`,
     webhookUrl: `https://a1ed8cc2844b.ngrok.io/webhooks/transactions`,
   }
-  console.log("mollieObject:", mollieObject)
   try {
     const payment = await mollieClient.payments.create(mollieObject)
     await Donation.create({
@@ -78,8 +77,7 @@ router.post("/:projectId/donations/", async (req, res) => {
 
     return res.json({ payment })
   } catch (error) {
-    console.log(error)
-    return res.status(500).json(error)
+    return res.status(500).json({ message: error.message, error })
   }
 })
 
@@ -105,9 +103,8 @@ router.post(
       )
       // const projectTagData = await project.addTags(tagIds)
       return res.json({ ...project.dataValues })
-    } catch (err) {
-      console.log(err)
-      return res.status(500).json(err.message)
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )
@@ -121,8 +118,8 @@ router.post(
     try {
       const tagIdsInDb = await req.project.addTags(tagIds)
       return res.json(tagIdsInDb)
-    } catch (err) {
-      return res.status(500).json(err)
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )
@@ -140,11 +137,9 @@ router.patch(
       if (
         !(projectKey == "projectName" || projectKey == "projectDescription")
       ) {
-        return res
-          .status(403)
-          .json(
-            `${projectKey} can't be updated. Only projectName and projectDescription can be updated.`
-          )
+        return res.status(403).json({
+          message: `${projectKey} can't be updated. Only projectName and projectDescription can be updated.`,
+        })
       }
     }
 
@@ -156,8 +151,8 @@ router.patch(
         projectDescription,
       })
       return res.json(updatedProject)
-    } catch (err) {
-      return res.status(500).json(err)
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )
@@ -171,8 +166,8 @@ router.delete(
     try {
       await ProjectTag.destroy({ where: { tagId, projectId } })
       return res.status(204).json({ message: "Tag deleted." })
-    } catch (err) {
-      return res.status(500).json({ error: "Something went wrong" })
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )
@@ -186,8 +181,8 @@ router.delete(
     try {
       await Project.destroy({ where: { id: projectId } })
       return res.status(204).json({ message: "Project deleted." })
-    } catch (err) {
-      return res.status(500).json({ error: "Something went wrong" })
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )

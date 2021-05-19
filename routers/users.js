@@ -18,9 +18,8 @@ router.post("/", async (req, res) => {
       bankAccount: user.bankAccount,
       message: "Account successfully created.",
     })
-  } catch (err) {
-    // console.log(err)
-    return res.status(400).json(err.message)
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error })
   }
 })
 
@@ -29,15 +28,12 @@ router.get(
   authenticateToken,
   userIdVerification,
   async (req, res) => {
-    // make sure the user id from the token is the same as the userId from the route
-    // const userId = await getVerifiedUserId(req, res)
     const { userId } = req.params
     try {
       const user = await findUserById(userId)
-      // if (!user) res.status(400)
       return res.json(user)
-    } catch (err) {
-      return res.status(500).json(err)
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )
@@ -55,13 +51,13 @@ router.patch(
     const reqUser = req.body
     try {
       if (Object.keys(reqUser).length === 0) {
-        return res.status(400).json("Nothing to update.")
+        return res.status(400).json({ message: "Nothing to update." })
       }
       const user = await findUserById(userId)
       const updatedUser = await user.update({ ...reqUser })
       return res.json(updatedUser)
-    } catch (err) {
-      return res.status(400).json(err.message)
+    } catch (error) {
+      return res.status(400).json({ message: error.message, error })
     }
   }
 )
@@ -78,9 +74,8 @@ router.delete(
       await Project.destroy({ where: { userId: userId } })
       await User.destroy({ where: { id: userId } })
       return res.status(204).json({ message: "User & projects deleted" })
-    } catch (err) {
-      console.log(err)
-      return res.status(500).json(err.message)
+    } catch (error) {
+      return res.status(500).json({ message: error.message, error })
     }
   }
 )

@@ -32,8 +32,8 @@ router.post("/transactions", async (req, res) => {
     }
     return res.status(200).json("OK")
   } catch (err) {
-    console.log(err)
-    return res.status(500).json(err)
+    console.log(error)
+    return res.status(500).json({ message: error.message, error })
   }
 })
 

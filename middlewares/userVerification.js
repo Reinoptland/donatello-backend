@@ -13,7 +13,7 @@ const userIdVerification = async (req, res, next) => {
   const userIdFromReq = req.params.userId
   const userId = await userIdFromToken(req.headers)
   if (userIdFromReq !== userId)
-    return res.status(401).json("user Id is different")
+    return res.status(401).json({ message: "user Id does not match" })
   next()
 }
 
@@ -23,7 +23,7 @@ const userIdVerificationFromProject = async (req, res, next) => {
   const userIdFrProject = project.userId
   const userIdFrToken = await userIdFromToken(req.headers)
   if (userIdFrProject !== userIdFrToken)
-    return res.status(401).json("user Id is different")
+    return res.status(401).json({ message: "user Id does not match" })
   req.project = project
   next()
 }
