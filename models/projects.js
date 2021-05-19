@@ -84,6 +84,13 @@ module.exports = (sequelize, DataTypes) => {
         alphabetically: {
           order: [["projectName", "ASC"]],
         },
+        // byTags(tagNames) {
+        //   return {
+        //     include: [
+        //       { model: User, where: { active: true } }
+        //     ]
+        //   }
+        // }
       },
       sequelize,
       tableName: "projects",

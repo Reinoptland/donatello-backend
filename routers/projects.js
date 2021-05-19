@@ -1,7 +1,7 @@
 const { Router } = require("express")
 const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
-const { Project, Donation, ProjectTag } = require("../models")
+const { Project, Donation, ProjectTag, Tag } = require("../models")
 const {
   userIdVerification,
   userIdVerificationFromProject,
@@ -10,6 +10,7 @@ const { findUserById } = require("../services/userService")
 const { findProjectById } = require("../services/projectService")
 const { findDonationById } = require("../services/donationService")
 const { createMollieClient } = require("@mollie/api-client")
+const { Op, Sequelize } = require("sequelize")
 
 const mollieClient = createMollieClient({
   apiKey: "test_3z3UFCnV8se28svBge5BEEmMxfGdVH",
@@ -19,11 +20,24 @@ router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10
   const reqOffset = req.query.offset || 0
   const sortBy = req.query.sortBy || "recent"
-
+  const tagNames = ["Technology", "Fashion"]
   try {
     const sortedProjects = await Project.scope(sortBy).findAll({
+      attributes: {
+        include: [
+          [Sequelize.fn("COUNT", Sequelize.col("tags.id")), "tagCount"],
+        ],
+      },
       limit: reqLimit,
       offset: reqOffset,
+      include: [
+        {
+          duplicating: true,
+          model: Tag,
+          where: { tag: { [Op.in]: tagNames } },
+        },
+      ],
+      group: ["project.id"],
     })
 
     res.json({ sortedProjects })
@@ -36,6 +50,11 @@ router.get("/:userId", async (req, res) => {
   const { userId } = req.params
   try {
     const projects = await Project.findAll({ where: { userId } })
+    if (projects.length === 0) {
+      return res
+        .status(500)
+        .json({ message: "There are no projects associated with this user." })
+    }
     return res.json(projects)
   } catch (error) {
     return res.status(500).json({ message: error.message, error })

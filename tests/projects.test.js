@@ -87,6 +87,58 @@ describe("/projects (get)", () => {
   })
 })
 
+describe("/projects/:userId (get)", () => {
+  test("should return all projects for a specific user", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    await db.Project.create(fakeProject(userId))
+
+    // act
+    const responseProject = await request.get("/projects/" + userId).send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
+    done()
+  })
+  test("should return an error if the user doesn't have any projects", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+
+    // act
+    const responseProject = await request.get("/projects/" + userId).send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(500)
+    done()
+  })
+})
+
+describe("/projects/:projectId/donations (post)", () => {
+  test("should return a new donation", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const projectDBCreated = await db.Project.create(fakeProject(userId))
+
+    const projectId = projectDBCreated.id
+    const body = {
+      donationAmount: "2.00",
+      comment: "TEST",
+    }
+
+    // act
+    const responseDonation = await request
+      .post("/projects/" + projectId + "/donations/")
+      .send(body)
+
+    // assert
+    expect(responseDonation.body).toBeDefined()
+    expect(responseDonation.status).toBe(200)
+    done()
+  })
+})
+
 describe("/projects/:userId (post)", () => {
   test("should create a new project when sent valid access token, project name & desc, & tagIds", async (done) => {
     // arrange
@@ -254,30 +306,6 @@ describe("/projects/:projectId/tags (post)", () => {
   })
 })
 
-describe("/projects/:projectId/donations (post)", () => {
-  test("should return a new donation", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const projectDBCreated = await db.Project.create(fakeProject(userId))
-
-    const projectId = projectDBCreated.id
-    const body = {
-      donationAmount: "2.00",
-      comment: "TEST",
-    }
-
-    // act
-    const responseDonation = await request
-      .post("/projects/" + projectId + "/donations/")
-      .send(body)
-
-    // assert
-    expect(responseDonation.body).toBeDefined()
-    expect(responseDonation.status).toBe(200)
-    done()
-  })
-})
-
 describe("/projects/:projectId/tags/:tagId (delete)", () => {
   test("should return 204 if successful", async (done) => {
     // arrange
@@ -329,23 +357,4 @@ describe("/projects/:projectId (delete)", () => {
     expect(responseDeletedProject.status).toBe(204)
     done()
   })
-})
-
-describe("/projects/:userId (get)", () => {
-  test("should return all projects for a specific user", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    const createProject = await db.Project.create(fakeProject(userId))
-
-    // act
-    const responseProject = await request.get("/projects/" + userId).send()
-
-    // assert
-    expect(responseProject.body).toBeDefined()
-    expect(responseProject.status).toBe(200)
-    done()
-  })
-  test.todo(
-    "/projects/:userId should return an error if the user doesn't have any projects"
-  )
 })
