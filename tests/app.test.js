@@ -83,7 +83,7 @@ describe("/users", () => {
     // arrange
     const body = fakeUser()
     // act
-    const response = await request.post("/users/user").send(body)
+    const response = await request.post("/users").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(200)
@@ -98,7 +98,7 @@ describe("/users", () => {
     body.password = "pass"
 
     // act
-    const response = await request.post("/users/user").send(body)
+    const response = await request.post("/users").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(400)
@@ -110,7 +110,7 @@ describe("/users", () => {
     await db.User.create(body)
 
     // act
-    const response = await request.post("/users/user").send(body)
+    const response = await request.post("/users").send(body)
     // assert
     expect(response.body).toBeDefined()
     expect(response.status).toBe(400)

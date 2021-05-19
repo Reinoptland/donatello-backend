@@ -5,7 +5,7 @@ const { userIdVerification } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
 const { User, Project } = require("../models")
 
-router.post("/user", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     await User.create({ ...req.body })
     return res.json("Account successfully created")

@@ -1,5 +1,7 @@
 const faker = require("faker")
 const { User, Project, Donation, Tag } = require("../models")
+const bcrypt = require("bcrypt")
+const saltRound = 10
 
 // ;("use strict")
 
@@ -8,7 +10,7 @@ const users = [...Array(100)].map((user) => ({
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   email: faker.internet.email(),
-  password: "fakepassword",
+  password: bcrypt.hashSync("fakepassword", saltRound),
   bankAccount: faker.finance.iban(),
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -71,6 +73,31 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date(),
     }))
+
+    // [{projectId: 1, amount: 2000, count: 4}, {projectId: 2, amount: 2000, count: 4}]
+    // projects.find().amount += donationAmount
+    // {1: {amount: 2000, count:4}, 2: {amount: 2000, count: 4}}
+    // projects[projectId].amount += donationAmount
+
+    let projectTotals = {}
+    for (const donation of donations) {
+      if (projectTotals.hasOwnProperty(donation.projectId)) {
+        const projectToUpdate = projectTotals[donation.projectId]
+        projectToUpdate.totalDonationAmount += donation.donationAmount
+        projectToUpdate.totalDonationCount += 1
+      } else {
+        projectTotals[donation.projectId] = {
+          totalDonationAmount: donation.donationAmount,
+          totalDonationCount: 1,
+        }
+      }
+    }
+    console.log("projectTotals:", projectTotals)
+
+    Object.keys(projectTotals).forEach(async (id) => {
+      await Project.update(projectTotals[id], { where: { id: id } })
+    })
+
     await queryInterface.bulkInsert("donations", donations, {})
 
     const tagsFromDB = await Tag.findAll()
