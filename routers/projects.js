@@ -10,7 +10,6 @@ const { findUserById } = require("../services/userService")
 const { findProjectById } = require("../services/projectService")
 const { findDonationById } = require("../services/donationService")
 const { createMollieClient } = require("@mollie/api-client")
-const { Op, Sequelize } = require("sequelize")
 
 const mollieClient = createMollieClient({
   apiKey: "test_3z3UFCnV8se28svBge5BEEmMxfGdVH",
@@ -20,24 +19,14 @@ router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10
   const reqOffset = req.query.offset || 0
   const sortBy = req.query.sortBy || "recent"
-  const tagNames = ["Technology", "Fashion"]
+  const tagNames = req.query.tagNames || []
   try {
-    const sortedProjects = await Project.scope(sortBy).findAll({
-      attributes: {
-        include: [
-          [Sequelize.fn("COUNT", Sequelize.col("tags.id")), "tagCount"],
-        ],
-      },
+    const sortedProjects = await Project.scope(sortBy, {
+      method: ["byTags", tagNames],
+    }).findAll({
       limit: reqLimit,
       offset: reqOffset,
-      include: [
-        {
-          duplicating: true,
-          model: Tag,
-          where: { tag: { [Op.in]: tagNames } },
-        },
-      ],
-      group: ["project.id"],
+      include: [{ model: Tag, as: "tags" }],
     })
 
     res.json({ sortedProjects })
@@ -64,9 +53,11 @@ router.get("/:userId", async (req, res) => {
 router.get("/:projectId/donations", async (req, res) => {
   const { projectId } = req.params
   try {
-    const project = await findProjectById(projectId)
-    const donations = await findDonationById(projectId)
-    const response = { project, donations }
+    const project = await Project.findAll({
+      where: { id: projectId },
+      include: { model: Donation, as: "donations" },
+    })
+    const response = { project }
     return res.json(response)
   } catch (error) {
     return res.status(500).json({ message: error.message, error })

@@ -1,5 +1,6 @@
 "use strict"
-const { Model } = require("sequelize")
+const { Model, Op } = require("sequelize")
+
 module.exports = (sequelize, DataTypes) => {
   class Projects extends Model {
     /**
@@ -16,8 +17,29 @@ module.exports = (sequelize, DataTypes) => {
         through: "ProjectTag",
         foreignKey: "projectId",
         otherKey: "tagId",
+        as: "tags",
+      })
+      this.belongsToMany(Tag, {
+        through: "ProjectTag",
+        foreignKey: "projectId",
+        otherKey: "tagId",
+        as: "matchingTag",
       })
       this.hasMany(Donation, { foreignKey: "projectId", as: "donations" })
+      this.addScope("byTags", (tagNames) => {
+        if (tagNames.length === 0) {
+          return {}
+        }
+        return {
+          include: [
+            {
+              model: Tag,
+              as: "matchingTag",
+              where: { tag: { [Op.in]: tagNames } },
+            },
+          ],
+        }
+      })
     }
 
     toJSON() {
@@ -87,10 +109,15 @@ module.exports = (sequelize, DataTypes) => {
         // byTags(tagNames) {
         //   return {
         //     include: [
-        //       { model: User, where: { active: true } }
-        //     ]
+        //       {
+        //         model: Tag,
+        //         as: "matchingTag",
+        //         where: { tag: { [Op.in]: tagNames } },
+        //       },
+        //       { model: Tag },
+        //     ],
         //   }
-        // }
+        // },
       },
       sequelize,
       tableName: "projects",
