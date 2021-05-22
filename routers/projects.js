@@ -20,9 +20,10 @@ router.get("/", async (req, res) => {
   const reqOffset = req.query.offset || 0
   const sortBy = req.query.sortBy || "recent"
   const tagNames = req.query.tagNames || []
+  const tagNamesToQuery = typeof tagNames === "string" ? [tagNames] : tagNames
   try {
     const sortedProjects = await Project.scope(sortBy, {
-      method: ["byTags", tagNames],
+      method: ["byTags", tagNamesToQuery],
     }).findAll({
       limit: reqLimit,
       offset: reqOffset,

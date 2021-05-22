@@ -9,6 +9,7 @@ const {
   fakeDonation,
   fakeTags,
 } = require("../utils/generateFakeData")
+const jwt = require("jsonwebtoken")
 
 // setup
 beforeEach(async () => {
@@ -52,6 +53,34 @@ describe("/projects (get)", () => {
     expect(responseProject.status).toBe(200)
     const responseLength = responseProject.body.sortedProjects.length
     expect(responseLength).toBe(8)
+    done()
+  })
+  test("should accept only 1 tag name", async (done) => {
+    // arrange
+    const limit = 8
+    const offset = 0
+    const sortBy = "alphabetically"
+    // const sortBy = "date"
+    const { id: userId } = await db.User.create(fakeUser())
+
+    for (i = 0; i < 10; i++) {
+      await db.Project.create(fakeProject(userId))
+    }
+    await db.Project.create({
+      projectName: "AAAAAA",
+      projectDescription: "first!",
+      userId: userId,
+    })
+
+    // act
+    const responseProject = await request
+      .get("/projects")
+      .query({ limit, offset, sortBy, tagNames: "Health" })
+      .send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
     done()
   })
   test("should return 8 projects sorted alphabetically", async (done) => {
@@ -137,6 +166,27 @@ describe("/projects/:projectId/donations (post)", () => {
     expect(responseDonation.status).toBe(200)
     done()
   })
+  test("should return 500 if sent a donationAmount as an integer", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const projectDBCreated = await db.Project.create(fakeProject(userId))
+
+    const projectId = projectDBCreated.id
+    const body = {
+      donationAmount: 2,
+      comment: "TEST",
+    }
+
+    // act
+    const responseDonation = await request
+      .post("/projects/" + projectId + "/donations/")
+      .send(body)
+
+    // assert
+    expect(responseDonation.body).toBeDefined()
+    expect(responseDonation.status).toBe(500)
+    done()
+  })
 })
 
 describe("/projects/:userId (post)", () => {
@@ -167,56 +217,65 @@ describe("/projects/:userId (post)", () => {
     done()
   })
 
-  test.todo(
-    ""
+  test("should return 401 when sent a malformed access token", async (done) => {
+    // create a body with all the mandatory project data
+    const { id: userId } = await db.User.create(fakeUser())
+    const tagNames = fakeTags()
+    const project = fakeProject(userId)
+    const tags = await db.Tag.bulkCreate(
+      tagNames.map((tagName) => ({ tag: tagName }))
+    )
 
-    // test("should NOT create a new project when sent a malformed access token", async (done) => {
-    //   const user = await fakeUser()
-    //   const newUser = await db.User.create(user)
-    //   const userId = newUser.id
-    //   // create a body with all the mandatory project data
-    //   const body = fakeProject(userId)
+    const body = {
+      project,
+      tagIds: tags.map((tag) => tag.id),
+    }
+    // act
+    // send "bla" in the authorization header
+    const responseProject = await request
+      .post("/projects/" + userId)
+      .set("Authorization", `Bearer "bla"`)
+      .send(body)
 
-    //   // act
-    //   // send "bla" in the authorization header
-    //   const responseProject = await request
-    //     .post("/projects")
-    //     .set("Authorization", `Bearer "bla"`)
-    //     .send(body)
+    // assert
 
-    //   // assert
-    //   expect(responseProject.status).toBe(401)
+    expect(responseProject.status).toBe(401)
 
-    //   done()
-    // })
+    done()
+  })
 
-    // test("should NOT create a new project when sent an expired access token", async (done) => {
-    //   // arrange
-    //   // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
-    //   const user = await fakeUser()
-    //   const newUser = await db.User.create(user)
-    //   const userId = newUser.id
-    //   const body = fakeProject(userId)
+  test("should return 401 when sent an expired access token", async (done) => {
+    // arrange
+    // create a new token using jwt sign -> .sign(payload, secret, { expiresIn: '-10s' }
+    const { id: userId } = await db.User.create(fakeUser())
+    const tagNames = fakeTags()
+    const project = fakeProject(userId)
+    const tags = await db.Tag.bulkCreate(
+      tagNames.map((tagName) => ({ tag: tagName }))
+    )
+    const body = {
+      project,
+      tagIds: tags.map((tag) => tag.id),
+    }
 
-    //   const userIdObj = { userId }
-    //   const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
-    //     expiresIn: "-10s",
-    //   })
+    const userIdObj = { userId }
+    const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
+      expiresIn: "-10s",
+    })
 
-    //   // act
-    //   // send the expired token in the authorization header
-    //   const responseProject = await request
-    //     .post("/projects")
-    //     .set("Authorization", `Bearer ${token}`)
-    //     .send(body)
+    // act
+    // send the expired token in the authorization header
+    const responseProject = await request
+      .post("/projects/" + userId)
+      .set("Authorization", `Bearer ${token}`)
+      .send(body)
 
-    //   // assert
-    //   // status 401
-    //   expect(responseProject.status).toBe(401)
+    // assert
+    // status 401
+    expect(responseProject.status).toBe(401)
 
-    //   done()
-    // })
-  )
+    done()
+  })
 })
 
 describe("/projects/:projectId (patch)", () => {
@@ -245,7 +304,7 @@ describe("/projects/:projectId (patch)", () => {
     expect(responseProjectName).toBe(body.projectName)
     done()
   })
-  test("should return an error if user tries to update something they shouldn't", async (done) => {
+  test("should return 403 if user tries to update something they shouldn't", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const { id: projectId } = await db.Project.create(fakeProject(userId))
@@ -278,13 +337,11 @@ describe("/projects/:projectId/tags (post)", () => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const tagNames = fakeTags()
-
     const tags = await db.Tag.bulkCreate(
       tagNames.map((tagName) => ({ tag: tagName }))
     )
     const tagIds = tags.map((tag) => tag.id)
     const projectDBCreated = await db.Project.create(fakeProject(userId))
-
     const projectId = projectDBCreated.id
     const body = {
       tagIds,
@@ -293,7 +350,7 @@ describe("/projects/:projectId/tags (post)", () => {
 
     // act
     const responseUpdatedTags = await request
-      .post("/projects/" + projectId + "/tags")
+      .post(`/projects/${projectId}/tags`)
       .set("Authorization", `Bearer ${token}`)
       .send(body)
 
@@ -338,6 +395,26 @@ describe("/projects/:projectId/tags/:tagId (delete)", () => {
     expect(responseDeletedProject.status).toBe(204)
     done()
   })
+  test("should return 500 if sent an invalid tagId", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    const projectDBCreated = await db.Project.create({
+      ...fakeProject(userId),
+    })
+
+    const projectId = projectDBCreated.id
+    const token = generateToken({ userId })
+
+    //act
+    const responseDeletedProject = await request
+      .delete(`/projects/${projectId}/tags/1`)
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseDeletedProject.status).toBe(500)
+    done()
+  })
 })
 
 describe("/projects/:projectId (delete)", () => {
@@ -355,6 +432,22 @@ describe("/projects/:projectId (delete)", () => {
 
     // assert
     expect(responseDeletedProject.status).toBe(204)
+    done()
+  })
+  test("should return 500 if sent invalid projectId", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    // const { id: projectId } = await db.Project.create(fakeProject(userId))
+    const token = generateToken({ userId })
+
+    //act
+    const responseDeletedProject = await request
+      .delete("/projects/" + "81c934f6-9f53-4616-b6cf-475b6f571726")
+      .set("Authorization", `Bearer ${token}`)
+      .send()
+
+    // assert
+    expect(responseDeletedProject.status).toBe(401)
     done()
   })
 })

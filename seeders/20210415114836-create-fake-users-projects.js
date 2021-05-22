@@ -10,7 +10,7 @@ const users = [...Array(100)].map((user) => ({
   email: faker.internet.email(),
   password: bcrypt.hashSync("fakepassword", saltRound),
   bankAccount: faker.finance.iban(),
-  createdAt: new Date(),
+  createdAt: faker.date.past(1),
   updatedAt: new Date(),
 }))
 
@@ -54,7 +54,7 @@ module.exports = {
         projectName: faker.company.bsBuzz(),
         projectDescription: faker.company.catchPhrase(),
         userId: usersArray[randomId].id,
-        createdAt: new Date(),
+        createdAt: faker.date.past(1),
         updatedAt: new Date(),
       }
     })
@@ -62,13 +62,14 @@ module.exports = {
 
     const projectsArray = await Project.findAll()
     const paymentStatusArray = ["open", "paid", "expired", "failed", "canceled"]
-    const donations = [...Array(100)].map((donation) => ({
+    const donations = [...Array(250)].map((donation) => ({
       id: faker.datatype.uuid(),
       donationAmount: faker.datatype.number(1000),
       projectId: projectsArray[randomIndex(99)].id,
       paymentId: "tr_" + faker.datatype.string(10),
       paymentStatus: paymentStatusArray[randomIndex(4)],
-      createdAt: new Date(),
+      // createdAt: new Date(),
+      createdAt: faker.date.past(1),
       updatedAt: new Date(),
     }))
 
