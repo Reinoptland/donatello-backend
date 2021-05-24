@@ -1,3 +1,4 @@
+require("dotenv").config()
 const { Router } = require("express")
 const router = new Router()
 const { authenticateToken } = require("../middlewares/auth")
@@ -7,12 +8,10 @@ const {
   userIdVerificationFromProject,
 } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
-const { findProjectById } = require("../services/projectService")
-const { findDonationById } = require("../services/donationService")
 const { createMollieClient } = require("@mollie/api-client")
 
 const mollieClient = createMollieClient({
-  apiKey: "test_3z3UFCnV8se28svBge5BEEmMxfGdVH",
+  apiKey: process.env.MOLLIE_API_KEY,
 })
 
 router.get("/", async (req, res) => {
