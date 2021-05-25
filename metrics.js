@@ -11,10 +11,10 @@ const makeProductOwnerHappy = async () => {
   FROM donations 
   GROUP BY "paymentStatus";
 
-  -- Count of donations for the month of May
+  -- Count of donations for the last 30 days
   SELECT count("id")
   FROM donations 
-  WHERE "paymentStatus" = 'paid' AND "createdAt" BETWEEN '2021-05-01T00:00:00.000' AND '2021-05-30T00:00:00.000'
+  WHERE "paymentStatus" = 'paid' AND "createdAt" BETWEEN NOW() - INTERVAL '30 DAYS' AND NOW()
     `)
   console.log(results)
 }
