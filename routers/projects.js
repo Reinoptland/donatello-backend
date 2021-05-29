@@ -8,21 +8,17 @@ const {
   userIdVerificationFromProject,
 } = require("../middlewares/userVerification")
 const { findUserById } = require("../services/userService")
-const { createMollieClient } = require("@mollie/api-client")
-
-const mollieClient = createMollieClient({
-  apiKey: process.env.MOLLIE_API_KEY,
-})
+const { mollieClient } = require("../services/paymentService")
 
 router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10
   const reqOffset = req.query.offset || 0
   const sortBy = req.query.sortBy || "recent"
   const tagNames = req.query.tagNames || []
-  const tagNamesToQuery = typeof tagNames === "string" ? [tagNames] : tagNames
+  const tagNamesToArray = typeof tagNames === "string" ? [tagNames] : tagNames
   try {
     const sortedProjects = await Project.scope(sortBy, {
-      method: ["byTags", tagNamesToQuery],
+      method: ["byTags", tagNamesToArray],
     }).findAll({
       limit: reqLimit,
       offset: reqOffset,
@@ -41,10 +37,11 @@ router.get("/:userId", async (req, res) => {
     const projects = await Project.findAll({ where: { userId } })
     if (projects.length === 0) {
       return res
-        .status(500)
+        .status(404)
         .json({ message: "There are no projects associated with this user." })
     }
-    return res.json(projects)
+    const response = { projects }
+    return res.json(response)
   } catch (error) {
     return res.status(500).json({ message: error.message, error })
   }
@@ -53,7 +50,7 @@ router.get("/:userId", async (req, res) => {
 router.get("/:projectId/donations", async (req, res) => {
   const { projectId } = req.params
   try {
-    const project = await Project.findAll({
+    const project = await Project.findOne({
       where: { id: projectId },
       include: { model: Donation, as: "donations" },
     })
@@ -74,7 +71,7 @@ router.post("/:projectId/donations/", async (req, res) => {
     },
     description: comment,
     redirectUrl: `https://www.google.com/`,
-    webhookUrl: `https://a1ed8cc2844b.ngrok.io/webhooks/transactions`,
+    webhookUrl: `https://08808a891e24.ngrok.io/webhooks/transactions`,
   }
   try {
     const payment = await mollieClient.payments.create(mollieObject)
@@ -147,7 +144,7 @@ router.patch(
       if (
         !(projectKey == "projectName" || projectKey == "projectDescription")
       ) {
-        return res.status(403).json({
+        return res.status(400).json({
           message: `${projectKey} can't be updated. Only projectName and projectDescription can be updated.`,
         })
       }

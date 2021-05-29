@@ -1,6 +1,6 @@
 ## What is Donatello?
 
-Donatello is a public donations platform with a Dockerized backend built on NodeJS with Express. The database layer is managed by PostgreSQL and Sequelize ORM. I've implemented Mollie which manages the payment transactions. There is an internal reporting dashboard done in SQL. The app was developed with TDD by using Jest & Supertest.
+Donatello is a public donations platform with a Dockerized backend built on NodeJS with Express. The database layer is managed by PostgreSQL and Sequelize ORM. I've implemented Mollie which manages the payment transactions. There is an internal reporting dashboard which uses raw SQL to query the data. The app was developed following a TDD approach by using Jest & Supertest.
 
 ## ERD
 

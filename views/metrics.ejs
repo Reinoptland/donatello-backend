@@ -15,20 +15,8 @@
     ></script>
   </head>
   <body>
-    <h1>Hello world!</h1>
-    <div>
-      <p>Average donation amount: €<%= metrics[0].avg.toFixed() %></p>
-      <div class="progress">
-        <div
-          class="progress-bar"
-          role="progressbar"
-          style=<%= `width:${metrics[0].avg.toFixed()/500*100}%` %>
-          aria-valuenow="493"
-          aria-valuemin="0"
-          aria-valuemax="500"
-        ></div>
-      </div>
-    </div>
+    <h1>Donatello Metrics</h1>
+    
     <table class="table">
       <tr>
         <th>Payment status</th>
@@ -36,7 +24,6 @@
         <th>Percentage of total</th>
       </tr>
       <% for(var i=1; i < 5; i++) { %>
-
       <tr>
         <td><%= metrics[i].paymentStatus %></td>
         <td><%= metrics[i].count %></td>
@@ -44,5 +31,76 @@
       </tr>
       <% } %>
     </table>
+    <div>
+        <p>Average donation amount: €<%= metrics[0].avg.toFixed() %></p>
+        <div class="progress">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            style=<%= `width:${metrics[0].avg.toFixed()/500*100}%` %>
+            aria-valuenow=<%= `width:${metrics[0].avg.toFixed()}` %>
+            aria-valuemin="0"
+            aria-valuemax="500"
+          ></div>
+        </div>
+      </div>
+
+    <div>
+        <p>Number of donations in the last 30 days: <%= metrics[5].donations %></p>
+        <div class="progress">
+
+            <div
+            class="progress-bar"
+            role="progressbar"
+            style=<%= `width:${metrics[5].donations/10*100}%` %>
+            aria-valuenow=<%= `width:${metrics[5].donations}` %>
+            aria-valuemin="0"
+            aria-valuemax="10"
+            ></div>
+        </div>
+    </div>
+    <div>
+        <p>Number of new projects in the last 30 days: <%= metrics[6].projects %></p>
+        <div class="progress">
+
+            <div
+            class="progress-bar"
+            role="progressbar"
+            style=<%= `width:${metrics[6].projects/10*100}%` %>
+            aria-valuenow=<%= `width:${metrics[6].projects}` %>
+            aria-valuemin="0"
+            aria-valuemax="10"
+            ></div>
+        </div>
+    </div>
+    <div>
+        <p>Number of new users in the last 30 days: <%= metrics[7].users %></p>
+        <div class="progress">
+
+            <div
+            class="progress-bar"
+            role="progressbar"
+            style=<%= `width:${metrics[7].users/10*100}%` %>
+            aria-valuenow=<%= `width:${metrics[7].users}` %>
+            aria-valuemin="0"
+            aria-valuemax="10"
+            ></div>
+        </div>
+    </div>
+    <div>
+        <p>Total revenue in the last 30 days: <%= metrics[8].revenue %></p>
+        <div class="progress">
+
+            <div
+            class="progress-bar"
+            role="progressbar"
+            style=<%= `width:${metrics[8].revenue/5000*100}%` %>
+            aria-valuenow=<%= `width:${metrics[8].revenue}` %>
+            aria-valuemin="0"
+            aria-valuemax="5000"
+            ></div>
+        </div>
+    </div>
+   
   </body>
 </HTML>
