@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       comment: {
         type: DataTypes.STRING,
       },
-      paymentId: {
+      molliePaymentId: {
         type: DataTypes.STRING,
         allowNull: false,
       },

@@ -10,7 +10,7 @@ router.post("/transactions", async (req, res) => {
   try {
     const payment = await mollieClient.payments.get(id)
     const donation = await Donation.findOne({
-      where: { paymentId: id },
+      where: { molliePaymentId: id },
     })
     const updatedDonation = await donation.update({
       paymentStatus: payment.status,
@@ -28,7 +28,7 @@ router.post("/transactions", async (req, res) => {
     }
     return res.status(200).json("OK")
   } catch (err) {
-    console.log(error)
+    console.log("what is the error?", error)
     return res.status(500).json({ message: error.message, error })
   }
 })

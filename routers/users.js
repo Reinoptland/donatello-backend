@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      bankAccount: user.bankAccount,
+      iBan: user.bankAccount,
       message: "Account successfully created.",
     })
   } catch (error) {
@@ -37,6 +37,22 @@ router.get(
     }
   }
 )
+
+router.get("/:userId/projects", async (req, res) => {
+  const { userId } = req.params
+  try {
+    const projects = await Project.findAll({ where: { userId } })
+    if (projects.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "There are no projects associated with this user." })
+    }
+    const response = { projects }
+    return res.json(response)
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error })
+  }
+})
 
 router.patch(
   "/:userId",

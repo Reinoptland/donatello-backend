@@ -18,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@mollie/api-client": "^3.5.0",
+    "aws-sdk": "^2.918.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",

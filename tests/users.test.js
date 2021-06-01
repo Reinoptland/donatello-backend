@@ -94,6 +94,38 @@ describe("/users/:userId (get)", () => {
   })
 })
 
+describe("/users/:userId/projects (get)", () => {
+  test("should return all projects for a specific user", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+    await db.Project.create(fakeProject(userId))
+
+    // act
+    const responseProject = await request
+      .get(`/users/${userId}/projects`)
+      .send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(200)
+    done()
+  })
+  test("should return an error if the user doesn't have any projects", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser())
+
+    // act
+    const responseProject = await request
+      .get(`/users/${userId}/projects`)
+      .send()
+
+    // assert
+    expect(responseProject.body).toBeDefined()
+    expect(responseProject.status).toBe(404)
+    done()
+  })
+})
+
 describe("/users/:userId (patch)", () => {
   test("should return an updated user", async (done) => {
     // arrange

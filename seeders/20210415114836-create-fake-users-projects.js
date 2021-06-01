@@ -9,7 +9,7 @@ const users = [...Array(100)].map((user) => ({
   lastName: faker.name.lastName(),
   email: faker.internet.email(),
   password: bcrypt.hashSync("fakepassword", saltRound),
-  bankAccount: faker.finance.iban(),
+  iBan: faker.finance.iban(),
   createdAt: faker.date.past(1),
   updatedAt: new Date(),
 }))
@@ -37,7 +37,7 @@ module.exports = {
     await queryInterface.bulkInsert("users", users, {})
 
     const tagsSeed = tags.map((tag) => ({
-      tag,
+      name: tag,
       id: faker.datatype.uuid(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -66,7 +66,7 @@ module.exports = {
       id: faker.datatype.uuid(),
       donationAmount: faker.datatype.number(1000),
       projectId: projectsArray[randomIndex(99)].id,
-      paymentId: "tr_" + faker.datatype.string(10),
+      molliePaymentId: "tr_" + faker.datatype.string(10),
       paymentStatus: paymentStatusArray[randomIndex(4)],
       // createdAt: new Date(),
       createdAt: faker.date.past(1),

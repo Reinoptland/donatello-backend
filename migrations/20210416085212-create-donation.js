@@ -8,11 +8,6 @@ module.exports = {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
       },
-      // transactionId: {
-      //   type: DataTypes.UUID,
-      //   allowNull: false,
-      //   defaultValue: DataTypes.UUIDV4,
-      // },
       projectId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -28,7 +23,7 @@ module.exports = {
       comment: {
         type: DataTypes.STRING,
       },
-      paymentId: {
+      molliePaymentId: {
         type: DataTypes.STRING,
         allowNull: false,
       },

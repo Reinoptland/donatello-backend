@@ -24,24 +24,7 @@ router.get("/", async (req, res) => {
       offset: reqOffset,
       include: [{ model: Tag, as: "tags" }],
     })
-
     res.json({ sortedProjects })
-  } catch (error) {
-    return res.status(500).json({ message: error.message, error })
-  }
-})
-
-router.get("/:userId", async (req, res) => {
-  const { userId } = req.params
-  try {
-    const projects = await Project.findAll({ where: { userId } })
-    if (projects.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "There are no projects associated with this user." })
-    }
-    const response = { projects }
-    return res.json(response)
   } catch (error) {
     return res.status(500).json({ message: error.message, error })
   }
@@ -54,6 +37,11 @@ router.get("/:projectId/donations", async (req, res) => {
       where: { id: projectId },
       include: { model: Donation, as: "donations" },
     })
+    if (project.length === 0) {
+      return res.status(404).json({
+        message: "There are no projects associated with this projectId.",
+      })
+    }
     const response = { project }
     return res.json(response)
   } catch (error) {
@@ -79,7 +67,7 @@ router.post("/:projectId/donations/", async (req, res) => {
       projectId,
       donationAmount,
       comment,
-      paymentId: payment.id,
+      molliePaymentId: payment.id,
     })
 
     return res.json({ payment })

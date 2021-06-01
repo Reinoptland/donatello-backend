@@ -116,34 +116,6 @@ describe("/projects (get)", () => {
   })
 })
 
-describe("/projects/:userId (get)", () => {
-  test("should return all projects for a specific user", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-    await db.Project.create(fakeProject(userId))
-
-    // act
-    const responseProject = await request.get("/projects/" + userId).send()
-
-    // assert
-    expect(responseProject.body).toBeDefined()
-    expect(responseProject.status).toBe(200)
-    done()
-  })
-  test("should return an error if the user doesn't have any projects", async (done) => {
-    // arrange
-    const { id: userId } = await db.User.create(fakeUser())
-
-    // act
-    const responseProject = await request.get("/projects/" + userId).send()
-
-    // assert
-    expect(responseProject.body).toBeDefined()
-    expect(responseProject.status).toBe(500)
-    done()
-  })
-})
-
 describe("/projects/:projectId/donations (post)", () => {
   test("should return a new donation", async (done) => {
     // arrange
@@ -197,7 +169,7 @@ describe("/projects/:userId (post)", () => {
     const tagNames = fakeTags()
     const project = fakeProject(userId)
     const tags = await db.Tag.bulkCreate(
-      tagNames.map((tagName) => ({ tag: tagName }))
+      tagNames.map((tagName) => ({ name: tagName }))
     )
 
     const body = {
@@ -223,7 +195,7 @@ describe("/projects/:userId (post)", () => {
     const tagNames = fakeTags()
     const project = fakeProject(userId)
     const tags = await db.Tag.bulkCreate(
-      tagNames.map((tagName) => ({ tag: tagName }))
+      tagNames.map((tagName) => ({ name: tagName }))
     )
 
     const body = {
@@ -251,7 +223,7 @@ describe("/projects/:userId (post)", () => {
     const tagNames = fakeTags()
     const project = fakeProject(userId)
     const tags = await db.Tag.bulkCreate(
-      tagNames.map((tagName) => ({ tag: tagName }))
+      tagNames.map((tagName) => ({ name: tagName }))
     )
     const body = {
       project,
@@ -304,7 +276,7 @@ describe("/projects/:projectId (patch)", () => {
     expect(responseProjectName).toBe(body.projectName)
     done()
   })
-  test("should return 403 if user tries to update something they shouldn't", async (done) => {
+  test("should return 400 if user tries to update something they shouldn't", async (done) => {
     // arrange
     const { id: userId } = await db.User.create(fakeUser())
     const { id: projectId } = await db.Project.create(fakeProject(userId))
@@ -327,7 +299,7 @@ describe("/projects/:projectId (patch)", () => {
     const expectedResponse =
       "somethingElse can't be updated. Only projectName and projectDescription can be updated."
     expect(responseUpdatedProject.body.message).toBe(expectedResponse)
-    expect(responseUpdatedProject.status).toBe(403)
+    expect(responseUpdatedProject.status).toBe(400)
     done()
   })
 })
@@ -338,7 +310,7 @@ describe("/projects/:projectId/tags (post)", () => {
     const { id: userId } = await db.User.create(fakeUser())
     const tagNames = fakeTags()
     const tags = await db.Tag.bulkCreate(
-      tagNames.map((tagName) => ({ tag: tagName }))
+      tagNames.map((tagName) => ({ name: tagName }))
     )
     const tagIds = tags.map((tag) => tag.id)
     const projectDBCreated = await db.Project.create(fakeProject(userId))
@@ -370,7 +342,7 @@ describe("/projects/:projectId/tags/:tagId (delete)", () => {
     const tagNames = fakeTags()
 
     const tags = await db.Tag.bulkCreate(
-      tagNames.map((tagName) => ({ tag: tagName }))
+      tagNames.map((tagName) => ({ name: tagName }))
     )
     const tagIds = tags.map((tag) => ({ tagId: tag.id }))
     const projectDBCreated = await db.Project.create(

@@ -24,7 +24,7 @@ const fakeUser = () => {
     lastName: faker.name.lastName(),
     email: faker.internet.email(),
     password: faker.internet.password(8),
-    bankAccount: faker.finance.iban(),
+    iBan: faker.finance.iban(),
   }
 }
 

@@ -8,10 +8,6 @@ module.exports = {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
       },
-      // uuid: {
-      //   type: DataTypes.UUID,
-      //   defaultValue: DataTypes.UUIDV4,
-      // },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -29,7 +25,7 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      bankAccount: {
+      iBan: {
         type: DataTypes.STRING,
         allowNull: false,
       },

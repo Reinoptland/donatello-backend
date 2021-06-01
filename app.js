@@ -6,6 +6,9 @@ const userRouter = require("./routers/users")
 const webhookRouter = require("./routers/webhooks")
 const loginRouter = require("./routers/login")
 const adminRouter = require("./routers/admin")
+const { DEV_DATABASE_URL } = require("./secrets")
+
+// console.log("secrets from app:", DEV_DATABASE_URL)
 
 app.set("view engine", "ejs")
 app.use(express.json())

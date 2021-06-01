@@ -8,7 +8,7 @@ module.exports = {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
       },
-      tag: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
       },

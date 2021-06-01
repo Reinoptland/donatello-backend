@@ -26,6 +26,9 @@ module.exports = (sequelize, DataTypes) => {
         as: "matchingTag",
       })
       this.hasMany(Donation, { foreignKey: "projectId", as: "donations" })
+      // Adding scopes here that have related models included
+      // These related models are not defined yet in the scopes object
+      // In Project.init
       this.addScope("byTags", (tagNames) => {
         if (tagNames.length === 0) {
           return {}
@@ -35,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
             {
               model: Tag,
               as: "matchingTag",
-              where: { tag: { [Op.in]: tagNames } },
+              where: { name: { [Op.in]: tagNames } },
             },
           ],
         }
@@ -43,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     toJSON() {
-      return { ...this.get() }
+      return { ...this.get(), updatedAt: undefined }
     }
   }
   Projects.init(

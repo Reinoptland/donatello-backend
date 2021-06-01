@@ -70,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: { msg: "Last name must not be empty." },
         },
       },
-      bankAccount: {
+      iBan: {
         type: DataTypes.STRING,
         allowNull: false,
         // Validate bank account
