@@ -6,9 +6,15 @@ const userRouter = require("./routers/users")
 const webhookRouter = require("./routers/webhooks")
 const loginRouter = require("./routers/login")
 const adminRouter = require("./routers/admin")
-const { DEV_DATABASE_URL } = require("./secrets")
+const { awsDecodedSecret } = require("./src/secrets")
 
-// console.log("secrets from app:", DEV_DATABASE_URL)
+const secretsFromAws = async () => {
+  const secret = await awsDecodedSecret()
+  console.log(secret)
+  return secret
+}
+
+secretsFromAws()
 
 app.set("view engine", "ejs")
 app.use(express.json())
