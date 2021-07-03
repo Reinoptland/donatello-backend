@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config();
 
 module.exports = {
   development: {
@@ -19,10 +19,11 @@ module.exports = {
   },
 
   production: {
-    username: "root",
-    password: null,
-    database: "database_production",
-    host: "127.0.0.1",
+    use_env_variable: "PROD_DATABASE_URL",
     dialect: "postgres",
+    pool: {
+      max: 4,
+    },
+    logging: true,
   },
-}
+};
