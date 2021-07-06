@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
       offset: reqOffset,
       include: [
         { model: Tag, as: "tags" },
-        { model: User, as: "user" },
+        { model: User, as: "user", attributes: ["firstName", "lastName"] },
       ],
     });
     res.json({ sortedProjects });
