@@ -63,7 +63,7 @@ router.post("/:projectId/donations/", async (req, res) => {
     },
     description: comment,
     redirectUrl: `https://www.google.com/`,
-    webhookUrl: `https://08808a891e24.ngrok.io/webhooks/transactions`,
+    webhookUrl: `${process.env.NGROK_URL}/webhooks/transactions`,
   };
   try {
     const payment = await mollieClient.payments.create(mollieObject);
