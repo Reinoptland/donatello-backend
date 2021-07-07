@@ -1,7 +1,6 @@
 const app = require("./app");
 const { sequelize } = require("./models");
-
-const PORT = process.env.PORT || 4000;
+const { PORT } = require("./config/network");
 
 app.listen(PORT, async () => {
   console.log(`Listening on port ${PORT}`);

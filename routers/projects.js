@@ -9,6 +9,11 @@ const {
 } = require("../middlewares/userVerification");
 const { findUserById } = require("../services/userService");
 const { mollieClient } = require("../services/paymentService");
+const {
+  molliePayments: { WEBHOOK_BASEURL },
+} = require("../config/services");
+const { FRONTEND_BASEURL } = require("../config/network");
+const uuidv4 = require("uuid").v4;
 
 router.get("/", async (req, res) => {
   const reqLimit = req.query.limit || 10;
@@ -55,25 +60,27 @@ router.get("/:projectId/donations", async (req, res) => {
 
 router.post("/:projectId/donations/", async (req, res) => {
   const { donationAmount, comment } = req.body;
-  const projectId = req.params.projectId;
-  const mollieObject = {
-    amount: {
-      value: donationAmount,
-      currency: "EUR",
-    },
-    description: comment,
-    redirectUrl: `https://www.google.com/`,
-    webhookUrl: `https://08808a891e24.ngrok.io/webhooks/transactions`,
-  };
   try {
-    const payment = await mollieClient.payments.create(mollieObject);
-    await Donation.create({
+    const projectId = req.params.projectId;
+    const donation = Donation.build({
+      id: uuidv4(),
       projectId,
       donationAmount,
       comment,
-      molliePaymentId: payment.id,
     });
 
+    const mollieObject = {
+      amount: {
+        value: donationAmount,
+        currency: "EUR",
+      },
+      description: comment,
+      redirectUrl: `${FRONTEND_BASEURL}/project/${projectId}/donations/${donation.id}/status`,
+      webhookUrl: `${WEBHOOK_BASEURL}/webhooks/transactions`,
+    };
+    const payment = await mollieClient.payments.create(mollieObject);
+    donation.molliePaymentId = payment.id;
+    await donation.save();
     return res.json({ payment });
   } catch (error) {
     return res.status(500).json({ message: error.message, error });
