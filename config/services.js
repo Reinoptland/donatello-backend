@@ -1,5 +1,4 @@
 require("dotenv").config();
-const ngrok = require("ngrok");
 const { PORT } = require("./network");
 const env = process.env.NODE_ENV || "development";
 
@@ -28,6 +27,8 @@ const config = {
 // this is not needed during automated testing,
 // in production our server is already accessible through the internet
 if (env === "development") {
+  const ngrok = require("ngrok");
+
   ngrok
     .connect(PORT)
     .then((ngrokUrl) => {
