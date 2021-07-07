@@ -18,7 +18,7 @@ The `.env` file format:
 ```text
 DEV_DATABASE_URL=<postgres url here>
 TEST_DATABASE_URL=<postgres url here>
-MOLLIE_API_KEY=<mollie api key here>
+MOLLIE_TEST_API_KEY=<mollie api key here>
 TOKEN_SECRET=<secret string here>
 ```
 

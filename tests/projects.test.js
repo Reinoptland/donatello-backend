@@ -138,7 +138,8 @@ describe("/projects/:projectId/donations (post)", () => {
 
     // assert
     expect(responseDonation.body).toBeDefined();
-    console.log(responseDonation);
+    expect(responseDonation.body.payment.redirectUrl).toBeDefined();
+
     expect(responseDonation.status).toBe(200);
     done();
   });
