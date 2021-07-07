@@ -10,6 +10,7 @@ const {
   fakeTags,
 } = require("../utils/generateFakeData");
 const jwt = require("jsonwebtoken");
+const { TOKEN_SECRET } = require("../config/secrets");
 
 // setup
 beforeEach(async () => {
@@ -137,6 +138,7 @@ describe("/projects/:projectId/donations (post)", () => {
 
     // assert
     expect(responseDonation.body).toBeDefined();
+    console.log(responseDonation);
     expect(responseDonation.status).toBe(200);
     done();
   });
@@ -233,7 +235,7 @@ describe("/projects/:userId (post)", () => {
     };
 
     const userIdObj = { userId };
-    const token = jwt.sign(userIdObj, process.env.TOKEN_SECRET, {
+    const token = jwt.sign(userIdObj, TOKEN_SECRET, {
       expiresIn: "-10s",
     });
 
