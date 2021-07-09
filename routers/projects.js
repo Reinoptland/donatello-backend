@@ -58,6 +58,25 @@ router.get("/:projectId/donations", async (req, res) => {
   }
 });
 
+router.get("/:projectId/donations/:donationId", async (req, res) => {
+  const { projectId, donationId } = req.params;
+  try {
+    const donation = await Donation.findOne({
+      where: { id: donationId },
+      include: { model: Project, as: "project" },
+    });
+    if (!donation) {
+      return res.status(404).json({
+        message: "This donation was not found",
+      });
+    }
+    const response = { donation };
+    return res.json(response);
+  } catch (error) {
+    return res.status(500).json({ message: error.message, error });
+  }
+});
+
 router.post("/:projectId/donations/", async (req, res) => {
   const { donationAmount, comment } = req.body;
   try {

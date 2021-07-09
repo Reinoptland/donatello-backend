@@ -9,10 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate({ Project }) {
       // define association here
-      this.belongsTo(Project, { foreignKey: "projectId", as: "projects" });
+      this.belongsTo(Project, { foreignKey: "projectId", as: "project" });
     }
     toJSON() {
-      return { ...this.get(), id: undefined };
+      return { ...this.get() };
     }
   }
   Donations.init(
