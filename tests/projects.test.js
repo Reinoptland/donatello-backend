@@ -258,8 +258,8 @@ describe("/projects/:userId (post)", () => {
 describe("/projects/:projectId/donations/:donationId (get)", () => {
   test("should respond with the project data and the donation status", async (done) => {
     // arrange
-    const { id: userId } = await db.User.create(fakeUser());
-    const project = await db.Project.create(fakeProject(userId));
+    const user = await db.User.create(fakeUser());
+    const project = await db.Project.create(fakeProject(user.id));
     const donation = await db.Donation.create(fakeDonation(project.id));
 
     // act
@@ -275,6 +275,7 @@ describe("/projects/:projectId/donations/:donationId (get)", () => {
     expect(response.body.donation.project.projectName).toBe(
       project.projectName
     );
+    expect(response.body.donation.project.user.firstName).toBe(user.firstName);
     done();
   });
 });

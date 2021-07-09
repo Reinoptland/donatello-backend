@@ -63,7 +63,15 @@ router.get("/:projectId/donations/:donationId", async (req, res) => {
   try {
     const donation = await Donation.findOne({
       where: { id: donationId },
-      include: { model: Project, as: "project" },
+      include: {
+        model: Project,
+        as: "project",
+        include: {
+          model: User,
+          as: "user",
+          attributes: ["firstName", "lastName"],
+        },
+      },
     });
     if (!donation) {
       return res.status(404).json({
