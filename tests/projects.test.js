@@ -255,6 +255,30 @@ describe("/projects/:userId (post)", () => {
   });
 });
 
+describe("/projects/:projectId/donations/:donationId (get)", () => {
+  test("should respond with the project data and the donation status", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser());
+    const project = await db.Project.create(fakeProject(userId));
+    const donation = await db.Donation.create(fakeDonation(project.id));
+
+    // act
+    const response = await request
+      .get(`/projects/${project.id}/donations/${donation.id}`)
+      .send();
+
+    // assert
+
+    expect(response.status).not.toBe(404);
+    expect(response.body.donation.id).toBe(donation.id);
+    expect(response.body.donation.status).toBe(donation.status);
+    expect(response.body.donation.project.projectName).toBe(
+      project.projectName
+    );
+    done();
+  });
+});
+
 describe("/projects/:projectId (patch)", () => {
   test("should return an updated project", async (done) => {
     // arrange
