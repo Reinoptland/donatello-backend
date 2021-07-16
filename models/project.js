@@ -1,5 +1,5 @@
-"use strict"
-const { Model, Op } = require("sequelize")
+"use strict";
+const { Model, Op } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class Projects extends Model {
@@ -11,27 +11,27 @@ module.exports = (sequelize, DataTypes) => {
     static associate({ User, Tag, Donation, ProjectTag }) {
       // define association here
       // foreignKey is from this table and belongs to User
-      this.belongsTo(User, { foreignKey: "userId", as: "user" })
-      this.hasMany(ProjectTag, { foreignKey: "projectId" })
+      this.belongsTo(User, { foreignKey: "userId", as: "user" });
+      this.hasMany(ProjectTag, { foreignKey: "projectId" });
       this.belongsToMany(Tag, {
         through: "ProjectTag",
         foreignKey: "projectId",
         otherKey: "tagId",
         as: "tags",
-      })
+      });
       this.belongsToMany(Tag, {
         through: "ProjectTag",
         foreignKey: "projectId",
         otherKey: "tagId",
         as: "matchingTag",
-      })
-      this.hasMany(Donation, { foreignKey: "projectId", as: "donations" })
+      });
+      this.hasMany(Donation, { foreignKey: "projectId", as: "donations" });
       // Adding scopes here that have related models included
       // These related models are not defined yet in the scopes object
       // In Project.init
       this.addScope("byTags", (tagNames) => {
         if (tagNames.length === 0) {
-          return {}
+          return {};
         }
         return {
           include: [
@@ -41,12 +41,12 @@ module.exports = (sequelize, DataTypes) => {
               where: { name: { [Op.in]: tagNames } },
             },
           ],
-        }
-      })
+        };
+      });
     }
 
     toJSON() {
-      return { ...this.get(), updatedAt: undefined }
+      return { ...this.get(), updatedAt: undefined };
     }
   }
   Projects.init(
@@ -98,7 +98,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       scopes: {
         recent: {
-          order: [["updatedAt", "DESC"]],
+          order: [["createdAt", "DESC"]],
         },
         totalDonationAmount: {
           order: [["totalDonationAmount", "DESC"]],
@@ -126,6 +126,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "projects",
       modelName: "Project",
     }
-  )
-  return Projects
-}
+  );
+  return Projects;
+};
