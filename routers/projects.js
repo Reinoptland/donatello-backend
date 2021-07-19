@@ -87,6 +87,13 @@ router.get("/:projectId/donations/:donationId", async (req, res) => {
 
 router.post("/:projectId/donations/", async (req, res) => {
   const { donationAmount, comment } = req.body;
+  const MAX_STRING_COMMENT_LENGTH = 255;
+  if (comment && comment.length > MAX_STRING_COMMENT_LENGTH) {
+    return res.status(400).json({
+      message: "Your comment is too long",
+      error: {},
+    });
+  }
   try {
     const projectId = req.params.projectId;
     const donation = Donation.build({
@@ -101,7 +108,7 @@ router.post("/:projectId/donations/", async (req, res) => {
         value: donationAmount,
         currency: "EUR",
       },
-      description: comment,
+      description: "Donatello Donation",
       redirectUrl: `${FRONTEND_BASEURL}/project/${projectId}/donations/${donation.id}/status`,
       webhookUrl: `${WEBHOOK_BASEURL}/webhooks/transactions`,
     };
@@ -110,7 +117,17 @@ router.post("/:projectId/donations/", async (req, res) => {
     await donation.save();
     return res.json({ payment });
   } catch (error) {
-    return res.status(500).json({ message: error.message, error });
+    switch (error.message) {
+      case "The amount contains an invalid value":
+        return res.status(400).json({
+          message:
+            "The format for amount is invalid, should be a string with an integer, a dot and 2 decimal places like: '10.00'",
+          error,
+        });
+
+      default:
+        return res.status(500).json({ message: error.message, error });
+    }
   }
 });
 

@@ -161,7 +161,59 @@ describe("/projects/:projectId/donations (post)", () => {
 
     // assert
     expect(responseDonation.body).toBeDefined();
-    expect(responseDonation.status).toBe(500);
+    expect(responseDonation.status).toBe(400);
+    expect(responseDonation.body.message).toBe(
+      "The format for amount is invalid, should be a string with an integer, a dot and 2 decimal places like: '10.00'"
+    );
+    done();
+  });
+
+  test("should accept a donation without a comment", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser());
+    const projectDBCreated = await db.Project.create(fakeProject(userId));
+
+    const projectId = projectDBCreated.id;
+    const body = {
+      donationAmount: "2.00",
+      comment: "",
+    };
+
+    // act
+    const responseDonation = await request
+      .post("/projects/" + projectId + "/donations/")
+      .send(body);
+
+    // assert
+    expect(responseDonation.body).toBeDefined();
+    expect(responseDonation.status).toBe(200);
+    expect(responseDonation.body.payment.redirectUrl).toBeDefined();
+
+    done();
+  });
+
+  test("should not accept a donation with a comment over 255 characters", async (done) => {
+    // arrange
+    const { id: userId } = await db.User.create(fakeUser());
+    const projectDBCreated = await db.Project.create(fakeProject(userId));
+
+    const projectId = projectDBCreated.id;
+    const body = {
+      donationAmount: "2.00",
+      comment:
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec.",
+    };
+
+    // act
+    const responseDonation = await request
+      .post("/projects/" + projectId + "/donations/")
+      .send(body);
+
+    // assert
+    expect(responseDonation.body).toBeDefined();
+    expect(responseDonation.body.message).toBe("Your comment is too long");
+    expect(responseDonation.status).toBe(400);
+
     done();
   });
 });

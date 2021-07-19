@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
           notNull: { msg: "Donation amount cannot be null." },
           notEmpty: { msg: "Donation amount must not be empty." },
         },
+        defaultValue: "Anonymous Donatello Donation",
       },
       comment: {
         type: DataTypes.STRING,
@@ -60,6 +61,12 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       tableName: "donations",
       modelName: "Donation",
+      hooks: {
+        async beforeCreate(instance, options) {
+          // set comments to default value in case of empty string or other falsy values
+          instance.comment = instance.comment || null;
+        },
+      },
     }
   );
   return Donations;
